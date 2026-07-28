@@ -18,8 +18,10 @@ test("服务端正确渲染 Controlab 工作台", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
   assert.match(html, /<title>Controlab · 在线控制实验室<\/title>/i);
-  assert.match(html, /让每一个公式/);
+  assert.match(html, /连续系统工作台/);
   assert.match(html, /系统模型/);
   assert.match(html, /时域响应/);
+  assert.match(html, /表达式/);
+  assert.match(html, /零极点/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
 });
