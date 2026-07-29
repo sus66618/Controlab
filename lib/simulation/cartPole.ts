@@ -17,6 +17,7 @@ export type CartPoleParams = {
 export type PendulumController = "off" | "pid" | "lqr";
 export type ExcitationType = "none" | "step" | "ramp" | "sine" | "pulse";
 export type ExcitationTarget = "reference" | "disturbance";
+export type PidStructure = "classic" | "composite";
 
 export type ExcitationConfig = {
   target: ExcitationTarget;
@@ -28,6 +29,7 @@ export type ExcitationConfig = {
 };
 
 export type PidControllerConfig = {
+  structure: PidStructure;
   kp: number;
   ki: number;
   kd: number;
@@ -69,6 +71,7 @@ export const DEFAULT_CART_POLE_PARAMS: CartPoleParams = {
 };
 
 export const DEFAULT_PID_CONFIG: PidControllerConfig = {
+  structure: "composite",
   kp: 20,
   ki: 0,
   kd: 4,
@@ -111,11 +114,13 @@ export function pendulumControlForce(state: CartPoleState, mode: PendulumControl
   const reference = options.reference ?? 0;
   if (mode === "pid") {
     const gains = options.pid ?? DEFAULT_PID_CONFIG;
-    const force = gains.kp * state.theta
+    const angleForce = gains.kp * state.theta
       + gains.ki * (options.angleIntegral ?? 0)
-      + gains.kd * state.thetaVelocity
-      + gains.kx * (state.x - reference)
-      + gains.kv * state.xVelocity;
+      + gains.kd * state.thetaVelocity;
+    const positionForce = gains.structure === "composite"
+      ? gains.kx * (state.x - reference) + gains.kv * state.xVelocity
+      : 0;
+    const force = angleForce + positionForce;
     return clamp(force, -gains.maxForce, gains.maxForce);
   }
   const config = options.lqr ?? DEFAULT_LQR_CONFIG;

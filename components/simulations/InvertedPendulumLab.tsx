@@ -150,7 +150,7 @@ export function InvertedPendulumLab({ onHome, onWorkbench }: { onHome: () => voi
   const applyController = () => {
     if (controllerType === "pid") {
       setPidApplied(pidDraft);
-      setControllerMessage("PID 参数已应用到执行器");
+      setControllerMessage(pidDraft.structure === "classic" ? "经典单环 PID 已应用：只控制摆角" : "复合 PID 已应用：摆角 PID + 位置 PD");
     } else if (lqrDesignMode === "weights") {
       const gains = designLqrGains(params, lqrDraft.q, lqrDraft.r);
       const next = { ...lqrDraft, gains };
@@ -254,9 +254,16 @@ function ControllerEditor({ enabled, setEnabled, type, setType, pid, setPid, lqr
     <div className="sim-card-head"><div><span className="section-label">FEEDBACK</span><h2>控制器设计</h2></div><label className={`feedback-toggle ${enabled ? "on" : ""}`}><input aria-label="倒立摆控制器" type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} /><i /></label></div>
     <div className="sim-controller-switch"><button className={type === "pid" ? "active" : ""} onClick={() => setType("pid")}>PID</button><button className={type === "lqr" ? "active" : ""} onClick={() => setType("lqr")}>LQR</button></div>
     {type === "pid" ? <>
-      <MathFormula className="controller-equation" latex="u=K_p\theta+K_i\int\theta\,dt+K_d\dot{\theta}+K_x(x-r)+K_v\dot{x}" display />
+      <div className="design-mode pid-mode-switch"><button className={pid.structure === "classic" ? "active" : ""} onClick={() => setPid({ ...pid, structure: "classic" })}>经典 PID</button><button className={pid.structure === "composite" ? "active" : ""} onClick={() => setPid({ ...pid, structure: "composite" })}>复合 PID</button></div>
+      {pid.structure === "classic" ? <>
+        <MathFormula className="controller-equation" latex="e_\theta=\theta-\theta_{\mathrm{ref}},\qquad u=K_p e_\theta+K_i\int e_\theta\,dt+K_d\dot{e}_\theta" display />
+        <div className="pid-teaching-note"><b>单输入、单误差</b><span>三个增益分别作用于误差、误差积分和误差变化率。当前 <MathFormula latex="\theta_{\mathrm{ref}}=0" />；它能扶杆，但不保证小车回到目标位置。</span></div>
+      </> : <>
+        <MathFormula className="controller-equation" latex="u=\underbrace{K_p e_\theta+K_i\int e_\theta\,dt+K_d\dot e_\theta}_{\text{摆角 PID}}+\underbrace{K_xe_x+K_v\dot e_x}_{\text{位置 PD}}" display />
+        <div className="pid-teaching-note"><b>两个误差、共用一个执行器</b><span><MathFormula latex="e_\theta=\theta-\theta_{\mathrm{ref}}" /> 保持直立，<MathFormula latex="e_x=x-r" /> 让小车回到参考位置。</span></div>
+      </>}
       <div className="sim-field-grid">
-        {(["kp", "ki", "kd", "kx", "kv", "maxForce"] as const).map((key) => <NumberField key={key} label={{ kp: "Kp", ki: "Ki", kd: "Kd", kx: "Kx", kv: "Kv", maxForce: "限幅/N" }[key]} value={pid[key]} onChange={(value) => setPid({ ...pid, [key]: value })} />)}
+        {(pid.structure === "classic" ? ["kp", "ki", "kd", "maxForce"] as const : ["kp", "ki", "kd", "kx", "kv", "maxForce"] as const).map((key) => <NumberField key={key} label={{ kp: pid.structure === "classic" ? "Kp" : "Kpθ", ki: pid.structure === "classic" ? "Ki" : "Kiθ", kd: pid.structure === "classic" ? "Kd" : "Kdθ", kx: "Kpx", kv: "Kdx", maxForce: "限幅/N" }[key]} value={pid[key]} onChange={(value) => setPid({ ...pid, [key]: value })} />)}
       </div>
     </> : <>
       <div className="design-mode"><button className={designMode === "weights" ? "active" : ""} onClick={() => setDesignMode("weights")}>Q/R 设计</button><button className={designMode === "gain" ? "active" : ""} onClick={() => setDesignMode("gain")}>直接输入 K</button></div>
@@ -316,7 +323,7 @@ function PrinciplePanel({ controllerType }: { controllerType: "pid" | "lqr" }) {
     </div>
     <p>本实验把摆杆视作均匀细杆，取 <MathFormula latex="I=ml^2/3" />；这里的 <MathFormula latex="l" /> 是转轴到质心的距离。</p>
     <p>状态取 <MathFormula latex="[x,\dot{x},\theta,\dot{\theta}]" />。直立点本身不稳定：没有反馈时，任意微小角度都会被重力放大。</p>
-    <p>PID 直接组合摆角误差、积分和变化率；LQR 同时权衡四个状态与控制能量，并由 <MathFormula latex="Q/R" /> 决定取舍。</p>
+    <p>经典 PID 只处理摆角误差；复合 PID 再加入位置 PD，避免小车边扶杆边“离家出走”。LQR 则同时权衡四个状态与控制能量，并由 <MathFormula latex="Q/R" /> 决定取舍。</p>
     <p>参数变化先改变非线性方程，再改变线性化矩阵、传函以及合适的控制器增益。</p>
   </section>;
 }

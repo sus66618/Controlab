@@ -267,6 +267,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .design-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 12px; }
 .design-mode button,.signal-types button { border: 1px solid var(--line); border-radius: 5px; padding: 7px 4px; background: transparent; color: var(--muted); font-size: 8px; cursor: pointer; }
 .design-mode button.active,.signal-types button.active { border-color: #4d6b37; background: rgba(183,255,74,.07); color: var(--accent); }
+.pid-mode-switch { margin-top: 13px; }
+.pid-teaching-note { display: grid; gap: 5px; margin: -3px 0 12px; padding: 9px 10px; border-left: 2px solid #4e6c39; background: rgba(183,255,74,.035); }
+.pid-teaching-note b { color: #cbd4dc; font-size: 8px; }
+.pid-teaching-note span { color: var(--muted); font-size: 8px; line-height: 1.65; }
 .gain-readout { margin-top: 10px; color: var(--muted); font: 9px "Courier New",monospace; line-height: 1.5; word-break: break-all; }
 .apply-controller { width: 100%; margin-top: 13px; border: 1px solid #5c8040; border-radius: 7px; padding: 9px; background: rgba(183,255,74,.1); color: var(--accent); font-size: 9px; font-weight: 700; cursor: pointer; }
 .apply-controller:hover { background: rgba(183,255,74,.16); }

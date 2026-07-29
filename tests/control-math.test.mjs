@@ -15,6 +15,7 @@ import {
   DEFAULT_CART_POLE_PARAMS,
   DEFAULT_EXCITATION,
   DEFAULT_LQR_CONFIG,
+  DEFAULT_PID_CONFIG,
   designLqrGains,
   excitationValue,
   initialCartPoleState,
@@ -86,6 +87,14 @@ test("倒立摆 LQR 能从小角度回到直立平衡", () => {
   }
   assert.ok(Math.abs(state.theta) < 0.01, `最终摆角 ${state.theta} rad 应接近 0`);
   assert.ok(Math.abs(state.x) < 0.02, `最终位置 ${state.x} m 应接近 0`);
+});
+
+test("经典 PID 只使用摆角误差，复合 PID 额外使用位置误差", () => {
+  const state = { x: 1, xVelocity: 0.5, theta: 0, thetaVelocity: 0, time: 0 };
+  const classic = pendulumControlForce(state, "pid", { reference: 0.25, pid: { ...DEFAULT_PID_CONFIG, structure: "classic" } });
+  const composite = pendulumControlForce(state, "pid", { reference: 0.25, pid: { ...DEFAULT_PID_CONFIG, structure: "composite" } });
+  closeTo(classic, 0);
+  closeTo(composite, DEFAULT_PID_CONFIG.kx * 0.75 + DEFAULT_PID_CONFIG.kv * 0.5);
 });
 
 test("倒立摆线性化模型随物理参数变化且完全可控", () => {
