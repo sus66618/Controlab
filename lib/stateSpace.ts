@@ -1,100 +1,83 @@
 import { polynomialRoots } from "./control.ts";
 import type { Complex } from "./control.ts";
 
+export type StateInputKind = "zero" | "step" | "sine" | "ramp";
+export type StateInputConfig = { kind: StateInputKind; amplitude: number; frequency: number; startTime: number };
+export type LinearStability = "unstable" | "lyapunov" | "asymptotic";
+
 export type StateSpacePreset = {
   id: string;
   name: string;
-  description: string;
-  stateLabels: string[];
-  stateUnits: string[];
   A: number[][];
-  B: number[];
+  B: number[][];
+  C: number[][];
+  D: number[][];
   initial: number[];
-  input: number;
-  sensors: number[];
+  inputs: StateInputConfig[];
   plotAxes: [number, number];
   duration: number;
 };
 
-export type StateSample = { t: number; state: number[] };
+export type StateSample = { t: number; state: number[]; input: number[]; output: number[] };
+
+const input = (kind: StateInputKind, amplitude: number, frequency = 0.5, startTime = 0) => ({ kind, amplitude, frequency, startTime });
 
 export const STATE_SPACE_PRESETS: StateSpacePreset[] = [
-  {
-    id: "mass-spring",
-    name: "质量–弹簧–阻尼",
-    description: "用位置与速度两个状态，看懂二阶系统如何在状态平面中衰减。",
-    stateLabels: ["x", "ẋ"],
-    stateUnits: ["m", "m/s"],
-    A: [[0, 1], [-4, -0.8]],
-    B: [0, 1],
-    initial: [1, 0],
-    input: 0,
-    sensors: [0],
-    plotAxes: [0, 1],
-    duration: 12,
-  },
-  {
-    id: "dc-motor",
-    name: "直流电机",
-    description: "电流产生转矩、转速产生反电动势，两个状态彼此耦合。",
-    stateLabels: ["ω", "i"],
-    stateUnits: ["rad/s", "A"],
-    A: [[-2, 1], [-0.5, -4]],
-    B: [0, 2],
-    initial: [0, 0],
-    input: 1,
-    sensors: [0],
-    plotAxes: [0, 1],
-    duration: 6,
-  },
-  {
-    id: "sensor-demo",
-    name: "双模态传感器实验",
-    description: "两个互不耦合的模态最适合观察：少装一个传感器，就会藏住一个状态。",
-    stateLabels: ["x₁", "x₂"],
-    stateUnits: ["", ""],
-    A: [[-1, 0], [0, -2]],
-    B: [1, 1],
-    initial: [1, -0.8],
-    input: 0,
-    sensors: [0],
-    plotAxes: [0, 1],
-    duration: 6,
-  },
-  {
-    id: "cart-pole",
-    name: "倒立摆线性模型",
-    description: "把当前非线性实验在直立点附近线性化，直接连接后续 LQR 与观测器。",
-    stateLabels: ["x", "ẋ", "θ", "θ̇"],
-    stateUnits: ["m", "m/s", "rad", "rad/s"],
-    A: [[0, 1, 0, 0], [0, -0.0769, -1.1319, 0], [0, 0, 0, 1], [0, 0.0995, 14.149, 0]],
-    B: [0, 0.9615, 0, -1.2434],
-    initial: [0, 0, 0.08, 0],
-    input: 0,
-    sensors: [0, 2],
-    plotAxes: [0, 2],
-    duration: 3.5,
-  },
+  { id: "mass-spring", name: "质量–弹簧–阻尼", A: [[0, 1], [-4, -0.8]], B: [[0], [1]], C: [[1, 0]], D: [[0]], initial: [1, 0], inputs: [input("zero", 0)], plotAxes: [0, 1], duration: 12 },
+  { id: "dc-motor", name: "直流电机", A: [[-2, 1], [-0.5, -4]], B: [[0], [2]], C: [[1, 0]], D: [[0]], initial: [0, 0], inputs: [input("step", 1)], plotAxes: [0, 1], duration: 6 },
+  { id: "sensor-demo", name: "双模态系统", A: [[-1, 0], [0, -2]], B: [[1], [1]], C: [[1, 0]], D: [[0]], initial: [1, -0.8], inputs: [input("zero", 0)], plotAxes: [0, 1], duration: 6 },
+  { id: "cart-pole", name: "倒立摆线性模型", A: [[0, 1, 0, 0], [0, -0.0769, -1.1319, 0], [0, 0, 0, 1], [0, 0.0995, 14.149, 0]], B: [[0], [0.9615], [0], [-1.2434]], C: [[1, 0, 0, 0], [0, 0, 1, 0]], D: [[0], [0]], initial: [0, 0, 0.08, 0], inputs: [input("zero", 0)], plotAxes: [0, 2], duration: 3.5 },
 ];
 
+export function emptyStateSpace(order = 2, inputs = 1, outputs = 1): StateSpacePreset {
+  return {
+    id: "custom",
+    name: "自定义系统",
+    A: zeroMatrix(order, order),
+    B: zeroMatrix(order, inputs),
+    C: zeroMatrix(outputs, order),
+    D: zeroMatrix(outputs, inputs),
+    initial: Array(order).fill(0),
+    inputs: Array.from({ length: inputs }, () => input("zero", 0)),
+    plotAxes: [0, Math.min(1, order - 1)],
+    duration: 8,
+  };
+}
+
 export function clonePreset(preset: StateSpacePreset): StateSpacePreset {
-  return { ...preset, stateLabels: [...preset.stateLabels], stateUnits: [...preset.stateUnits], A: preset.A.map((row) => [...row]), B: [...preset.B], initial: [...preset.initial], sensors: [...preset.sensors], plotAxes: [...preset.plotAxes] as [number, number] };
+  return { ...preset, A: preset.A.map((row) => [...row]), B: preset.B.map((row) => [...row]), C: preset.C.map((row) => [...row]), D: preset.D.map((row) => [...row]), initial: [...preset.initial], inputs: preset.inputs.map((item) => ({ ...item })), plotAxes: [...preset.plotAxes] as [number, number] };
 }
 
-export function sensorMatrix(order: number, sensors: number[]) {
-  if (!sensors.length) return [Array(order).fill(0)];
-  return sensors.map((sensor) => Array.from({ length: order }, (_, index) => index === sensor ? 1 : 0));
+export function resizeStateSpace(model: StateSpacePreset, order: number, inputCount: number, outputCount: number): StateSpacePreset {
+  return {
+    ...model,
+    id: "custom",
+    name: "自定义系统",
+    A: resizeMatrix(model.A, order, order),
+    B: resizeMatrix(model.B, order, inputCount),
+    C: resizeMatrix(model.C, outputCount, order),
+    D: resizeMatrix(model.D, outputCount, inputCount),
+    initial: resizeVector(model.initial, order),
+    inputs: Array.from({ length: inputCount }, (_, index) => model.inputs[index] ? { ...model.inputs[index] } : input("zero", 0)),
+    plotAxes: [Math.min(model.plotAxes[0], order - 1), Math.min(model.plotAxes[1], order - 1)],
+  };
 }
 
-export function controllabilityMatrix(A: number[][], B: number[]) {
+export function parseMatrixText(text: string, rows: number, columns: number) {
+  const parsed = text.trim().split(/\n|;/).filter(Boolean).map((row) => row.trim().split(/[\s,，]+/).filter(Boolean).map(Number));
+  if (parsed.length !== rows || parsed.some((row) => row.length !== columns || row.some((value) => !Number.isFinite(value)))) throw new Error(`请输入 ${rows}×${columns} 个有效数字`);
+  return parsed;
+}
+
+export function controllabilityMatrix(A: number[][], B: number[][]) {
   const order = A.length;
-  const columns: number[][] = [];
-  let column = [...B];
+  const blocks: number[][][] = [];
+  let block = B.map((row) => [...row]);
   for (let index = 0; index < order; index += 1) {
-    columns.push(column);
-    column = multiplyMatrixVector(A, column);
+    blocks.push(block);
+    block = multiplyMatrices(A, block);
   }
-  return Array.from({ length: order }, (_, row) => columns.map((values) => values[row]));
+  return Array.from({ length: order }, (_, row) => blocks.flatMap((matrix) => matrix[row]));
 }
 
 export function observabilityMatrix(A: number[][], C: number[][]) {
@@ -129,43 +112,63 @@ export function matrixRank(matrix: number[][], tolerance = 1e-8) {
   return rank;
 }
 
-export function singularValues(matrix: number[][]) {
-  if (!matrix.length || !matrix[0]?.length) return [];
-  const gram = multiplyMatrices(transpose(matrix), matrix);
-  return symmetricEigenvalues(gram).map((value) => Math.sqrt(Math.max(0, value))).sort((a, b) => b - a);
-}
-
 export function stateEigenvalues(A: number[][]): Complex[] {
   return polynomialRoots(characteristicPolynomial(A)).sort((left, right) => left.re - right.re || left.im - right.im);
 }
 
-export function analyzeStateSpace(A: number[][], B: number[], C: number[][]) {
+export function classifyLinearStability(A: number[][], eigenvalues = stateEigenvalues(A)): LinearStability {
+  const tolerance = 1e-6;
+  if (eigenvalues.some((value) => value.re > tolerance)) return "unstable";
+  if (eigenvalues.every((value) => value.re < -tolerance)) return "asymptotic";
+  const boundary: Complex[][] = [];
+  eigenvalues.filter((value) => Math.abs(value.re) <= tolerance).forEach((value) => {
+    const group = boundary.find((items) => Math.hypot(items[0].re - value.re, items[0].im - value.im) < 1e-4);
+    if (group) group.push(value); else boundary.push([value]);
+  });
+  const semisimple = boundary.every((group) => A.length - complexMatrixRank(shiftComplexMatrix(A, group[0])) >= group.length);
+  return semisimple ? "lyapunov" : "unstable";
+}
+
+export function analyzeStateSpace(A: number[][], B: number[][], C: number[][]) {
   const controllability = controllabilityMatrix(A, B);
   const observability = observabilityMatrix(A, C);
+  const eigenvalues = stateEigenvalues(A);
   return {
     controllability,
     observability,
     controllabilityRank: matrixRank(controllability),
     observabilityRank: matrixRank(observability),
-    controllabilityStrength: singularValues(controllability),
-    observabilityStrength: singularValues(observability),
-    eigenvalues: stateEigenvalues(A),
+    eigenvalues,
+    stability: classifyLinearStability(A, eigenvalues),
   };
 }
 
-export function simulateStateSpace(A: number[][], B: number[], initial: number[], input: number, duration: number, steps = 480): StateSample[] {
+export function inputVectorAtTime(configs: StateInputConfig[], time: number) {
+  return configs.map((config) => {
+    const elapsed = time - config.startTime;
+    if (elapsed < 0 || config.kind === "zero") return 0;
+    if (config.kind === "step") return config.amplitude;
+    if (config.kind === "ramp") return config.amplitude * elapsed;
+    return config.amplitude * Math.sin(2 * Math.PI * config.frequency * elapsed);
+  });
+}
+
+export function simulateStateSpace(A: number[][], B: number[][], C: number[][], D: number[][], initial: number[], inputs: StateInputConfig[], duration: number, steps = 520): StateSample[] {
   const dt = duration / steps;
   let state = [...initial];
   const samples: StateSample[] = [];
-  const derivative = (values: number[]) => multiplyMatrixVector(A, values).map((value, index) => value + B[index] * input);
+  const derivative = (values: number[], time: number) => addVectors(multiplyMatrixVector(A, values), multiplyMatrixVector(B, inputVectorAtTime(inputs, time)));
   for (let index = 0; index <= steps; index += 1) {
-    samples.push({ t: index * dt, state: [...state] });
-    const k1 = derivative(state);
-    const k2 = derivative(addScaled(state, k1, dt / 2));
-    const k3 = derivative(addScaled(state, k2, dt / 2));
-    const k4 = derivative(addScaled(state, k3, dt));
+    const time = index * dt;
+    const currentInput = inputVectorAtTime(inputs, time);
+    const output = addVectors(multiplyMatrixVector(C, state), multiplyMatrixVector(D, currentInput));
+    samples.push({ t: time, state: [...state], input: currentInput, output });
+    const k1 = derivative(state, time);
+    const k2 = derivative(addScaled(state, k1, dt / 2), time + dt / 2);
+    const k3 = derivative(addScaled(state, k2, dt / 2), time + dt / 2);
+    const k4 = derivative(addScaled(state, k3, dt), time + dt);
     state = state.map((value, stateIndex) => value + (dt / 6) * (k1[stateIndex] + 2 * k2[stateIndex] + 2 * k3[stateIndex] + k4[stateIndex]));
-    if (state.some((value) => !Number.isFinite(value))) break;
+    if (state.some((value) => !Number.isFinite(value) || Math.abs(value) > 1e9)) break;
   }
   return samples;
 }
@@ -183,34 +186,37 @@ function characteristicPolynomial(A: number[][]) {
   return coefficients;
 }
 
-function symmetricEigenvalues(matrix: number[][]) {
-  const work = matrix.map((row) => [...row]);
-  const order = work.length;
-  for (let iteration = 0; iteration < 80 * order * order; iteration += 1) {
-    let p = 0; let q = 1; let largest = 0;
-    for (let row = 0; row < order; row += 1) for (let column = row + 1; column < order; column += 1) {
-      if (Math.abs(work[row][column]) > largest) { largest = Math.abs(work[row][column]); p = row; q = column; }
+function complexMatrixRank(matrix: Complex[][], tolerance = 1e-7) {
+  const work = matrix.map((row) => row.map((value) => ({ ...value })));
+  let rank = 0;
+  for (let column = 0; column < work[0].length && rank < work.length; column += 1) {
+    let pivot = rank;
+    for (let row = rank + 1; row < work.length; row += 1) if (complexAbs(work[row][column]) > complexAbs(work[pivot][column])) pivot = row;
+    if (complexAbs(work[pivot][column]) <= tolerance) continue;
+    [work[rank], work[pivot]] = [work[pivot], work[rank]];
+    const divisor = work[rank][column];
+    for (let col = column; col < work[0].length; col += 1) work[rank][col] = complexDiv(work[rank][col], divisor);
+    for (let row = 0; row < work.length; row += 1) {
+      if (row === rank) continue;
+      const factor = work[row][column];
+      for (let col = column; col < work[0].length; col += 1) work[row][col] = complexSub(work[row][col], complexMul(factor, work[rank][col]));
     }
-    if (largest < 1e-11 || order < 2) break;
-    const angle = 0.5 * Math.atan2(2 * work[p][q], work[q][q] - work[p][p]);
-    const cosine = Math.cos(angle); const sine = Math.sin(angle);
-    for (let index = 0; index < order; index += 1) {
-      const left = work[index][p]; const right = work[index][q];
-      work[index][p] = cosine * left - sine * right;
-      work[index][q] = sine * left + cosine * right;
-    }
-    for (let index = 0; index < order; index += 1) {
-      const top = work[p][index]; const bottom = work[q][index];
-      work[p][index] = cosine * top - sine * bottom;
-      work[q][index] = sine * top + cosine * bottom;
-    }
+    rank += 1;
   }
-  return work.map((row, index) => row[index]);
+  return rank;
 }
 
+function shiftComplexMatrix(A: number[][], eigenvalue: Complex) { return A.map((row, rowIndex) => row.map((value, columnIndex) => ({ re: value - (rowIndex === columnIndex ? eigenvalue.re : 0), im: rowIndex === columnIndex ? -eigenvalue.im : 0 }))); }
+function complexAbs(value: Complex) { return Math.hypot(value.re, value.im); }
+function complexMul(a: Complex, b: Complex): Complex { return { re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re }; }
+function complexSub(a: Complex, b: Complex): Complex { return { re: a.re - b.re, im: a.im - b.im }; }
+function complexDiv(a: Complex, b: Complex): Complex { const denominator = b.re ** 2 + b.im ** 2 || 1e-12; return { re: (a.re * b.re + a.im * b.im) / denominator, im: (a.im * b.re - a.re * b.im) / denominator }; }
+function zeroMatrix(rows: number, columns: number) { return Array.from({ length: rows }, () => Array(columns).fill(0)); }
+function resizeMatrix(matrix: number[][], rows: number, columns: number) { return Array.from({ length: rows }, (_, row) => Array.from({ length: columns }, (_, column) => matrix[row]?.[column] ?? 0)); }
+function resizeVector(vector: number[], length: number) { return Array.from({ length }, (_, index) => vector[index] ?? 0); }
 function identity(order: number) { return Array.from({ length: order }, (_, row) => Array.from({ length: order }, (_, column) => row === column ? 1 : 0)); }
-function transpose(matrix: number[][]) { return matrix[0].map((_, column) => matrix.map((row) => row[column])); }
 function trace(matrix: number[][]) { return matrix.reduce((sum, row, index) => sum + row[index], 0); }
-function multiplyMatrixVector(matrix: number[][], vector: number[]) { return matrix.map((row) => row.reduce((sum, value, index) => sum + value * vector[index], 0)); }
-function multiplyMatrices(left: number[][], right: number[][]) { const transposed = transpose(right); return left.map((row) => transposed.map((column) => row.reduce((sum, value, index) => sum + value * column[index], 0))); }
+function multiplyMatrixVector(matrix: number[][], vector: number[]) { return matrix.map((row) => row.reduce((sum, value, index) => sum + value * (vector[index] ?? 0), 0)); }
+function multiplyMatrices(left: number[][], right: number[][]) { const columns = right[0]?.length ?? 0; return left.map((row) => Array.from({ length: columns }, (_, column) => row.reduce((sum, value, index) => sum + value * (right[index]?.[column] ?? 0), 0))); }
+function addVectors(left: number[], right: number[]) { return left.map((value, index) => value + (right[index] ?? 0)); }
 function addScaled(state: number[], derivative: number[], scale: number) { return state.map((value, index) => value + derivative[index] * scale); }

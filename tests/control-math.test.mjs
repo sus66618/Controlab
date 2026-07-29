@@ -24,7 +24,7 @@ import {
   stepCartPole,
 } from "../lib/simulation/cartPole.ts";
 import { polynomialToLatex, transferToLatex } from "../lib/math/latex.ts";
-import { analyzeStateSpace, sensorMatrix, simulateStateSpace, STATE_SPACE_PRESETS } from "../lib/stateSpace.ts";
+import { analyzeStateSpace, classifyLinearStability, emptyStateSpace, parseMatrixText, resizeStateSpace, simulateStateSpace, STATE_SPACE_PRESETS } from "../lib/stateSpace.ts";
 
 const closeTo = (actual, expected, tolerance = 1e-4) => {
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} 应接近 ${expected}`);
@@ -135,7 +135,7 @@ test("传递函数可以转换为规范的 LaTeX", () => {
 
 test("状态空间能控性与能观性秩计算正确", () => {
   const spring = STATE_SPACE_PRESETS.find((preset) => preset.id === "mass-spring");
-  const analysis = analyzeStateSpace(spring.A, spring.B, sensorMatrix(2, [0]));
+  const analysis = analyzeStateSpace(spring.A, spring.B, spring.C);
   assert.equal(analysis.controllabilityRank, 2);
   assert.equal(analysis.observabilityRank, 2);
   assert.ok(analysis.eigenvalues.every((value) => value.re < 0));
@@ -143,15 +143,37 @@ test("状态空间能控性与能观性秩计算正确", () => {
 
 test("关闭传感器或执行器会如实降低系统性质", () => {
   const demo = STATE_SPACE_PRESETS.find((preset) => preset.id === "sensor-demo");
-  const hiddenState = analyzeStateSpace(demo.A, demo.B, sensorMatrix(2, [0]));
-  const noActuator = analyzeStateSpace(demo.A, [0, 0], sensorMatrix(2, [0, 1]));
+  const hiddenState = analyzeStateSpace(demo.A, demo.B, demo.C);
+  const noActuator = analyzeStateSpace(demo.A, [[0], [0]], [[1, 0], [0, 1]]);
   assert.equal(hiddenState.observabilityRank, 1);
   assert.equal(noActuator.controllabilityRank, 0);
 });
 
 test("稳定状态空间模型的自由响应回到原点", () => {
   const spring = STATE_SPACE_PRESETS.find((preset) => preset.id === "mass-spring");
-  const samples = simulateStateSpace(spring.A, spring.B, spring.initial, 0, spring.duration);
+  const samples = simulateStateSpace(spring.A, spring.B, spring.C, spring.D, spring.initial, spring.inputs, spring.duration);
   const final = samples.at(-1).state;
   assert.ok(Math.hypot(...final) < 0.02);
+  assert.equal(samples[0].output.length, spring.C.length);
+});
+
+test("状态空间维度变化会同步调整全部矩阵", () => {
+  const resized = resizeStateSpace(emptyStateSpace(2, 1, 1), 4, 2, 3);
+  assert.deepEqual([resized.A.length, resized.A[0].length], [4, 4]);
+  assert.deepEqual([resized.B.length, resized.B[0].length], [4, 2]);
+  assert.deepEqual([resized.C.length, resized.C[0].length], [3, 4]);
+  assert.deepEqual([resized.D.length, resized.D[0].length], [3, 2]);
+  assert.equal(resized.inputs.length, 2);
+});
+
+test("矩阵整块粘贴支持空格、逗号与分号", () => {
+  assert.deepEqual(parseMatrixText("1, 2; 3 4", 2, 2), [[1, 2], [3, 4]]);
+  assert.throws(() => parseMatrixText("1 2 3", 2, 2));
+});
+
+test("连续系统稳定性区分不稳定、李雅普诺夫稳定和渐近稳定", () => {
+  assert.equal(classifyLinearStability([[-1, 0], [0, -2]]), "asymptotic");
+  assert.equal(classifyLinearStability([[0, -1], [1, 0]]), "lyapunov");
+  assert.equal(classifyLinearStability([[0, 1], [0, 0]]), "unstable");
+  assert.equal(classifyLinearStability([[1, 0], [0, -1]]), "unstable");
 });

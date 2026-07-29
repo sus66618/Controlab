@@ -36,6 +36,7 @@ export function Plot({
   square = false,
   robustFrame = false,
   markers = [],
+  legendLimit = 3,
 }: {
   id: string;
   series: PlotSeries[];
@@ -46,6 +47,7 @@ export function Plot({
   square?: boolean;
   robustFrame?: boolean;
   markers?: PlotMarker[];
+  legendLimit?: number;
 }) {
   const width = 960;
   const margin = { left: 68, right: 28, top: 24, bottom: 50 };
@@ -145,7 +147,7 @@ export function Plot({
       <text x={width / 2} y={height - 9} textAnchor="middle" className="axis-label">{xLabel}</text>
       <text x="17" y={height / 2} textAnchor="middle" transform={`rotate(-90 17 ${height / 2})`} className="axis-label">{yLabel}</text>
       <g transform={`translate(${width - margin.right - 150},${margin.top + 3})`}>
-        {series.slice(0, 3).map((item, index) => <g key={item.name} transform={`translate(0,${index * 21})`}>
+        {series.slice(0, legendLimit).map((item, index) => <g key={item.name} transform={`translate(0,${index * 21})`}>
           <line x1="0" x2="23" y1="0" y2="0" stroke={item.color} strokeWidth="2.5" strokeDasharray={item.dashed ? "6 5" : undefined} />
           <text x="32" y="4" className="legend-text">{item.name}</text>
         </g>)}
