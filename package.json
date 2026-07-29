@@ -9,16 +9,17 @@
     "dev": "vinext dev",
     "build": "vinext build",
     "start": "vinext start",
-    "test": "npm run build && node --experimental-strip-types --test tests/control-math.test.mjs tests/modern-control.test.mjs tests/system-identification.test.mjs tests/module-navigation.test.mjs tests/ui-contract.test.mjs tests/rendered-html.test.mjs",
+    "test": "npm run build && node --experimental-strip-types --test tests/control-math.test.mjs tests/modern-control.test.mjs tests/identification-data.test.mjs tests/system-identification.test.mjs tests/module-navigation.test.mjs tests/ui-contract.test.mjs tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
     "katex": "^0.16.22",
-    "next": "16.2.6",
+    "next": "16.2.12",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "read-excel-file": "9.3.5"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
