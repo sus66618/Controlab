@@ -20,6 +20,8 @@ test("服务端正确渲染 Controlab 模块封面", async () => {
   assert.match(html, /<title>Controlab · 在线控制实验室<\/title>/i);
   assert.match(html, /控制系统学习与仿真平台/);
   assert.match(html, /系统分析/);
+  assert.match(html, /现代控制/);
+  assert.match(html, /系统辨识/);
   assert.match(html, /闭环控制/);
   assert.match(html, /动力学仿真/);
   assert.match(html, /小车倒立摆/);

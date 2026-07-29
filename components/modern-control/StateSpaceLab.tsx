@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { AppHeader } from "@/components/control-lab/AppHeader";
 import { Plot } from "@/components/control-lab/Plot";
 import { MathFormula } from "@/components/math/MathFormula";
+import { ModernControlDesigner } from "@/components/modern-control/ModernControlDesigner";
 import { formatNumber } from "@/lib/control";
 import {
   analyzeStateSpace,
@@ -20,6 +21,7 @@ import type { LinearStability, StateInputConfig, StateSpacePreset } from "@/lib/
 type MatrixKey = "A" | "B" | "C" | "D";
 type ViewTab = "state" | "output" | "trajectory" | "eigen";
 type DetailTab = "controllability" | "observability" | "stability" | null;
+type WorkspaceMode = "model" | "design";
 
 const COLORS = ["#b7ff4a", "#55d6be", "#f3ac58", "#b18cff", "#ff7e72", "#6f9dff"];
 const INPUT_NAMES: Record<StateInputConfig["kind"], string> = { zero: "零输入", step: "阶跃", sine: "正弦", ramp: "斜坡" };
@@ -31,6 +33,7 @@ export function StateSpaceLab({ onHome, onTransfer, onSimulation }: { onHome: ()
   const [pasteTarget, setPasteTarget] = useState<MatrixKey | null>(null);
   const [pasteText, setPasteText] = useState("");
   const [pasteError, setPasteError] = useState("");
+  const [workspace, setWorkspace] = useState<WorkspaceMode>("model");
 
   const order = model.A.length;
   const inputCount = model.B[0]?.length ?? 1;
@@ -54,6 +57,7 @@ export function StateSpaceLab({ onHome, onTransfer, onSimulation }: { onHome: ()
     setPasteTarget(null);
     setPasteText("");
     setPasteError("");
+    setWorkspace("model");
   };
 
   const openPaste = (key: MatrixKey) => {
@@ -82,6 +86,11 @@ export function StateSpaceLab({ onHome, onTransfer, onSimulation }: { onHome: ()
     </>} />
 
     <section className="matrix-studio">
+      <nav className="modern-workspace-switch" aria-label="现代控制工作区">
+        <button className={workspace === "model" ? "active" : ""} onClick={() => setWorkspace("model")}><span>01</span>状态空间</button>
+        <button className={workspace === "design" ? "active" : ""} onClick={() => setWorkspace("design")}><span>02</span>反馈与估计</button>
+      </nav>
+      {workspace === "model" ? <>
       <header className="matrix-studio-toolbar">
         <div><span className="section-label">STATE–SPACE STUDIO</span><h1>状态空间模型</h1></div>
         <div className="dimension-controls">
@@ -136,6 +145,7 @@ export function StateSpaceLab({ onHome, onTransfer, onSimulation }: { onHome: ()
         {detail === "observability" && <MatrixDetail title="能观性推导" formula="\mathcal{O}=[C^\mathsf{T}\ (CA)^\mathsf{T}\ \cdots]^\mathsf{T}" matrix={analysis.observability} rank={analysis.observabilityRank} conclusion={analysis.observabilityRank === order ? "矩阵满列秩，状态可以由输出随时间的变化唯一重建。" : "矩阵不满列秩，存在不同内部状态产生相同输出的情况。"} />}
         {detail === "stability" && <StabilityDetail stability={analysis.stability} eigenvalues={analysis.eigenvalues} />}
       </section>}
+      </> : <ModernControlDesigner key={`${order}-${inputCount}-${outputCount}`} model={model} />}
     </section>
   </main>;
 }

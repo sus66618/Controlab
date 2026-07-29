@@ -5,10 +5,11 @@ import type { TransferModel } from "@/lib/control";
 import { transferToLatex } from "@/lib/math/latex";
 import { AppHeader } from "./AppHeader";
 
-export function Cover({ model, onOpenAnalysis, onOpenClosedLoop, onOpenSimulation }: {
+export function Cover({ model, onOpenAnalysis, onOpenModern, onOpenIdentification, onOpenSimulation }: {
   model: TransferModel;
   onOpenAnalysis: () => void;
-  onOpenClosedLoop: () => void;
+  onOpenModern: () => void;
+  onOpenIdentification: () => void;
   onOpenSimulation: () => void;
 }) {
   return <main className="controlab-app cover-page">
@@ -24,24 +25,32 @@ export function Cover({ model, onOpenAnalysis, onOpenClosedLoop, onOpenSimulatio
 
     <section className="module-grid" aria-label="Controlab 模块">
       <button className="module-card primary" onClick={onOpenAnalysis}>
-        <span className="module-index">01 / PLANT</span>
+        <span className="module-index">01 / SYSTEM</span>
         <div className="module-icon plant-icon"><i /><i /><i /></div>
         <h2>系统分析</h2>
-        <p>从传递函数进入状态空间，观察时域、频域、模态与系统内部状态。</p>
+        <p>传递函数、时频域、根轨迹、奈氏图与经典闭环控制。</p>
         <MathFormula className="module-formula" latex={transferToLatex(model.numerator, model.denominator)} />
         <b>进入工作台 →</b>
       </button>
-      <button className="module-card" onClick={onOpenClosedLoop}>
-        <span className="module-index">02 / FEEDBACK</span>
+      <button className="module-card" onClick={onOpenModern}>
+        <span className="module-index">02 / MODERN</span>
         <div className="module-icon loop-icon"><i>C</i><i>G</i><i>↺</i></div>
-        <h2>闭环控制</h2>
-        <p>接入 PID 与校正器，对比控制前后的动态品质。</p>
-        <MathFormula className="module-formula" latex="R \rightarrow C(s) \rightarrow G(s) \rightarrow Y" />
-        <b>开启反馈 →</b>
+        <h2>现代控制</h2>
+        <p>状态空间、状态反馈、极点配置、LQR、观测器与卡尔曼滤波。</p>
+        <MathFormula className="module-formula" latex="\dot{x}=Ax+Bu,\quad y=Cx+Du" />
+        <b>设计控制器 →</b>
+      </button>
+      <button className="module-card identification-card" onClick={onOpenIdentification}>
+        <span className="module-index">03 / IDENTIFICATION</span>
+        <div className="module-icon identification-icon"><i /><i /><i /></div>
+        <h2>系统辨识</h2>
+        <p>从输入输出数据反推 ARX 模型，并用自由仿真检验拟合质量。</p>
+        <MathFormula className="module-formula" latex="A(q^{-1})y=B(q^{-1})u+e" />
+        <b>从数据建模 →</b>
       </button>
       <button className="module-card simulation-card" onClick={onOpenSimulation}>
-        <span className="module-index">03 / SIMULATION</span>
-        <div><h2>动力学仿真</h2><p>固定运动模型、可调物理参数与可替换控制器。首个实验：小车倒立摆。</p></div>
+        <span className="module-index">04 / SIMULATION</span>
+        <div><h2>动力学仿真</h2><p>物理参数、外部扰动与可替换控制器。当前实验：小车倒立摆。</p></div>
         <div className="pendulum-mark" aria-hidden="true"><i /><span /></div>
         <b>进入实验场 →</b>
       </button>
