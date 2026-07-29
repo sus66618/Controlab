@@ -18,10 +18,9 @@ export function DcMotorLab({ onBack, onNavigate }: { onBack: () => void; onNavig
   const [loadSignal, setLoadSignal] = useState<PlantSignal>({ kind: "constant", amplitude: 0.05 });
   const [selectedOutput, setSelectedOutput] = useState("speed");
   const outputs = useMemo(() => dcMotorOutputs(params), [params]);
-  const output = outputs.find((item) => item.id === selectedOutput) ?? outputs[0];
   const initialState = useMemo(() => initialDcMotorState(params), [params]);
   const derivative = useCallback((time: number, state: number[], voltage: number) => dcMotorDerivative(params, time, state, voltage, signalValue(loadSignal, time, 0)), [loadSignal, params]);
-  const simulation = usePlantSimulation({ initialState, derivative, signal, manualInput, output, dt: 0.001, resetKey: JSON.stringify(params) });
+  const simulation = usePlantSimulation({ initialState, derivative, signal, manualInput, dt: 0.001, resetKey: JSON.stringify(params) });
   const voltage = signalValue(signal, simulation.time, manualInput);
   const loadTorque = signalValue(loadSignal, simulation.time, 0);
   return <PlantLabShell title="电枢控制直流电机" eyebrow="PLANT 02 · ELECTROMECHANICAL" description="电流先建立转矩，转矩再推动惯量；电气和机械动态缺一不可。" inputLabel="电枢电压" inputUnit="V" inputRange={[-24, 24]} {...simulation} signal={signal} manualInput={manualInput} outputs={outputs} selectedOutput={selectedOutput} summary={dcMotorSummary(params)} scene={<DcMotorScene state={simulation.state} voltage={voltage} loadTorque={loadTorque} torqueConstant={params.kt} />} parameters={<MotorParameters params={params} onChange={setParams} />} extraInput={<LoadEditor signal={loadSignal} onChange={setLoadSignal} />} onRunningChange={simulation.setRunning} onSignalChange={setSignal} onManualInputChange={setManualInput} onOutputChange={setSelectedOutput} onReset={simulation.reset} onBack={onBack} onNavigate={onNavigate} />;

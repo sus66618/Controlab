@@ -3,19 +3,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { rk4Step } from "@/lib/simulation/core/integrate";
 import { signalValue } from "@/lib/simulation/core/signals";
-import type { PlantDerivative, PlantHistoryPoint, PlantOutputChannel, PlantSignal } from "@/lib/simulation/core/types";
+import type { PlantDerivative, PlantHistoryPoint, PlantSignal } from "@/lib/simulation/core/types";
 
 type PlantSimulationOptions = {
   initialState: number[];
   derivative: PlantDerivative;
   signal: PlantSignal;
   manualInput: number;
-  output: PlantOutputChannel;
   dt?: number;
   resetKey: string;
 };
 
-export function usePlantSimulation({ initialState, derivative, signal, manualInput, output, dt = 0.002, resetKey }: PlantSimulationOptions) {
+export function usePlantSimulation({ initialState, derivative, signal, manualInput, dt = 0.002, resetKey }: PlantSimulationOptions) {
   const [state, setState] = useState(() => [...initialState]);
   const [time, setTime] = useState(0);
   const [history, setHistory] = useState<PlantHistoryPoint[]>([]);
@@ -26,13 +25,11 @@ export function usePlantSimulation({ initialState, derivative, signal, manualInp
   const derivativeRef = useRef(derivative);
   const signalRef = useRef(signal);
   const manualRef = useRef(manualInput);
-  const outputRef = useRef(output);
   const lastSampleRef = useRef(-Infinity);
 
   useEffect(() => { derivativeRef.current = derivative; }, [derivative]);
   useEffect(() => { signalRef.current = signal; }, [signal]);
   useEffect(() => { manualRef.current = manualInput; }, [manualInput]);
-  useEffect(() => { outputRef.current = output; }, [output]);
 
   const reset = useCallback(() => {
     stateRef.current = [...initialState];
@@ -68,7 +65,7 @@ export function usePlantSimulation({ initialState, derivative, signal, manualInp
           steps += 1;
           if (timeRef.current - lastSampleRef.current >= 0.025) {
             const currentDerivative = derivativeRef.current(timeRef.current, stateRef.current, input);
-            const point = { time: timeRef.current, input, output: outputRef.current.read(stateRef.current, input, currentDerivative) };
+            const point = { time: timeRef.current, input, state: [...stateRef.current], derivative: currentDerivative };
             setHistory((items) => [...items.slice(-599), point]);
             lastSampleRef.current = timeRef.current;
           }

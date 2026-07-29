@@ -17,6 +17,6 @@ export type PlantModelSummary = {
   metrics: { label: string; value: string }[];
 };
 
-export type PlantHistoryPoint = { time: number; output: number; input: number };
+export type PlantHistoryPoint = { time: number; input: number; state: number[]; derivative: number[] };
 
 export type PlantDerivative = (time: number, state: number[], input: number) => number[];

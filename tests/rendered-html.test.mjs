@@ -24,6 +24,6 @@ test("服务端正确渲染 Controlab 模块封面", async () => {
   assert.match(html, /系统辨识/);
   assert.match(html, /闭环控制/);
   assert.match(html, /动力学仿真/);
-  assert.match(html, /小车倒立摆/);
+  assert.match(html, /从被控对象到算法验证/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
 });

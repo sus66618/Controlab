@@ -22,7 +22,6 @@ export function SallenKeyLab({ onBack, onNavigate }: { onBack: () => void; onNav
   const [manualInput, setManualInput] = useState(0);
   const [selectedOutput, setSelectedOutput] = useState("actual-output");
   const outputs = useMemo(() => sallenKeyOutputChannels(params), [params]);
-  const output = outputs.find((item) => item.id === selectedOutput) ?? outputs[0];
   const initialState = useMemo(() => initialSallenKeyState(params), [params]);
   const derivative = useCallback(
     (time: number, state: number[], input: number) => sallenKeyDerivative(params, time, state, input),
@@ -33,7 +32,6 @@ export function SallenKeyLab({ onBack, onNavigate }: { onBack: () => void; onNav
     derivative,
     signal,
     manualInput,
-    output,
     dt: 0.0005,
     resetKey: JSON.stringify(params),
   });
@@ -64,7 +62,11 @@ export function SallenKeyLab({ onBack, onNavigate }: { onBack: () => void; onNav
 }
 
 function SallenKeyParameters({ params, onChange }: { params: SallenKeyParams; onChange: (params: SallenKeyParams) => void }) {
-  const setPositive = (key: keyof SallenKeyParams, value: number) => onChange({ ...params, [key]: positiveNumber(value, 1e-12) });
+  const setPositive = (key: keyof SallenKeyParams, value: number) => {
+    const next = positiveNumber(value, 1e-12);
+    // 理想 Sallen-Key 低通在当前拓扑下要求增益低于 3。
+    onChange({ ...params, [key]: key === "gain" ? Math.min(2.99, next) : next });
+  };
   const setFinite = (key: keyof SallenKeyParams, value: number) => onChange({ ...params, [key]: finiteNumber(value) });
   return <div className="plant-parameters">
     <div className="plant-parameter-section"><strong>RC 网络</strong><div className="plant-parameter-grid">

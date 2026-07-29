@@ -22,3 +22,10 @@ test("实验大厅与参数输入使用统一视觉契约", async () => {
   assert.match(css, /appearance:\s*textfield/);
   assert.match(css, /::-webkit-inner-spin-button/);
 });
+
+test("切换输出量时从历史状态重新计算曲线", async () => {
+  const types = await readFile(new URL("../lib/simulation/core/types.ts", import.meta.url), "utf8");
+  const shell = await readFile(new URL("../components/simulations/PlantLabShell.tsx", import.meta.url), "utf8");
+  assert.match(types, /PlantHistoryPoint\s*=\s*\{[^}]+state:\s*number\[\]/);
+  assert.match(shell, /output\.read\(point\.state/);
+});

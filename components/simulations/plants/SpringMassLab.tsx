@@ -19,10 +19,9 @@ export function SpringMassLab({ onBack, onNavigate }: { onBack: () => void; onNa
   const model = useMemo(() => buildSpringMassModel(config), [config]);
   const outputs = useMemo(() => springMassOutputs(model), [model]);
   const outputId = outputs.some((item) => item.id === selectedOutput) ? selectedOutput : outputs[0].id;
-  const output = outputs.find((item) => item.id === outputId) ?? outputs[0];
   const initialState = useMemo(() => initialSpringMassState(config), [config]);
   const derivative = useCallback((time: number, state: number[], force: number) => springMassDerivative(model, time, state, force), [model]);
-  const simulation = usePlantSimulation({ initialState, derivative, signal, manualInput, output, resetKey: JSON.stringify(config) });
+  const simulation = usePlantSimulation({ initialState, derivative, signal, manualInput, resetKey: JSON.stringify(config) });
   const force = signalValue(signal, simulation.time, manualInput);
   const updateCount = (count: number) => setConfig(defaultSpringMassConfig(count));
   return <PlantLabShell title="多质量弹簧—阻尼系统" eyebrow="PLANT 01 · MECHANICAL" description="连接改变，质量、阻尼和刚度矩阵也随之改变。" inputLabel="外力" inputUnit="N" inputRange={[-20, 20]} {...simulation} signal={signal} manualInput={manualInput} outputs={outputs} selectedOutput={outputId} summary={springMassSummary(model)} scene={<SpringMassScene model={model} state={simulation.state} force={force} />} parameters={<SpringParameters config={config} onChange={setConfig} onCountChange={updateCount} />} onRunningChange={simulation.setRunning} onSignalChange={setSignal} onManualInputChange={setManualInput} onOutputChange={setSelectedOutput} onReset={simulation.reset} onBack={onBack} onNavigate={onNavigate} />;

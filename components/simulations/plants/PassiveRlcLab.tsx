@@ -19,10 +19,9 @@ export function PassiveRlcLab({ onBack, onNavigate }: { onBack: () => void; onNa
   const model = useMemo(() => buildPassiveRlcModel(config), [config]);
   const outputs = useMemo(() => passiveRlcOutputs(model), [model]);
   const outputId = outputs.some((item) => item.id === selectedOutput) ? selectedOutput : outputs[0].id;
-  const output = outputs.find((item) => item.id === outputId) ?? outputs[0];
   const initialState = useMemo(() => initialPassiveRlcState(config), [config]);
   const derivative = useCallback((time: number, state: number[], source: number) => passiveRlcDerivative(model, time, state, source), [model]);
-  const simulation = usePlantSimulation({ initialState, derivative, signal, manualInput, output, dt: .0005, resetKey: JSON.stringify(config) });
+  const simulation = usePlantSimulation({ initialState, derivative, signal, manualInput, dt: .0005, resetKey: JSON.stringify(config) });
   const source = signalValue(signal, simulation.time, manualInput);
   const isSeries = config.topology === "series";
   return <PlantLabShell title="无源 RLC 电路" eyebrow="PLANT 03 · PASSIVE CIRCUIT" description="外部激励与初始储能共同决定电阻、电感和电容之间的能量交换。" inputLabel={isSeries ? "电压源" : "电流源"} inputUnit={isSeries ? "V" : "A"} inputRange={isSeries ? [-12, 12] : [-3, 3]} {...simulation} signal={signal} manualInput={manualInput} outputs={outputs} selectedOutput={outputId} summary={passiveRlcSummary(model)} scene={<PassiveRlcScene model={model} state={simulation.state} source={source} />} parameters={<PassiveRlcParameters config={config} onChange={setConfig} />} onRunningChange={simulation.setRunning} onSignalChange={setSignal} onManualInputChange={setManualInput} onOutputChange={setSelectedOutput} onReset={simulation.reset} onBack={onBack} onNavigate={onNavigate} />;
