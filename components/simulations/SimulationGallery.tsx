@@ -2,6 +2,7 @@
 
 import { AppHeader } from "@/components/control-lab/AppHeader";
 import { ModuleNav } from "@/components/control-lab/ModuleNav";
+import { ExperimentCoverVisual } from "./ExperimentCoverVisual";
 import { SIMULATION_EXPERIMENTS, groupExperiments } from "@/lib/simulation/experimentCatalog";
 import type { SimulationExperimentCard, SimulationExperimentId } from "@/lib/simulation/experimentCatalog";
 import type { ControlModuleId } from "@/lib/moduleCatalog";
@@ -24,5 +25,5 @@ export function SimulationGallery({ onHome, onNavigate, onOpen, experiments = SI
 }
 
 function ExperimentGroup({ label, title, note, items, onOpen }: { label: string; title: string; note: string; items: readonly SimulationExperimentCard[]; onOpen: (id: SimulationExperimentId) => void }) {
-  return <section className="simulation-gallery-group"><header><div><span>{label}</span><h2>{title}</h2></div><p>{note}</p></header><div className="simulation-gallery-grid">{items.map((item) => <button key={item.id} className="simulation-experiment-card" style={{ "--experiment-accent": item.accent } as React.CSSProperties} onClick={() => onOpen(item.id as SimulationExperimentId)}><span className="simulation-experiment-index">{item.index}</span><div className={`simulation-card-visual visual-${item.id}`} aria-hidden="true"><i /><i /><i /></div><div><small>{item.stateLabel}</small><h3>{item.title}</h3><p>{item.description}</p></div><b>进入实验 →</b></button>)}</div></section>;
+  return <section className="simulation-gallery-group"><header><div><span>{label}</span><h2>{title}</h2></div><p>{note}</p></header><div className="simulation-gallery-grid">{items.map((item) => <button key={item.id} className="simulation-experiment-card" style={{ "--experiment-accent": item.accent } as React.CSSProperties} onClick={() => onOpen(item.id as SimulationExperimentId)}><span className="simulation-experiment-index">{item.index}</span><ExperimentCoverVisual experimentId={item.id as SimulationExperimentId} /><div><small>{item.stateLabel}</small><h3>{item.title}</h3><p>{item.description}</p></div><b>进入实验 →</b></button>)}</div></section>;
 }

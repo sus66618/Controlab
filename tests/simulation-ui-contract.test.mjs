@@ -29,3 +29,11 @@ test("切换输出量时从历史状态重新计算曲线", async () => {
   assert.match(types, /PlantHistoryPoint\s*=\s*\{[^}]+state:\s*number\[\]/);
   assert.match(shell, /output\.read\(point\.state/);
 });
+
+test("五个实验使用与对象对应的专属静态封面", async () => {
+  const cover = await readFile(new URL("../components/simulations/ExperimentCoverVisual.tsx", import.meta.url), "utf8");
+  for (const marker of ["cover-spring-mass", "cover-dc-motor", "cover-passive-rlc", "cover-active-sallen-key", "cover-cart-pole"]) {
+    assert.match(cover, new RegExp(marker));
+  }
+  assert.doesNotMatch(cover, /<svg|animation|@keyframes/i);
+});
