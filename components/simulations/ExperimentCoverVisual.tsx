@@ -22,12 +22,12 @@ export function ExperimentCoverVisual({ experimentId }: { experimentId: Simulati
       <span className="cover-capacitor">C</span>
     </div>;
   }
-  if (experimentId === "active-sallen-key") {
-    return <div className="simulation-card-visual cover-active-sallen-key" aria-hidden="true">
+  if (experimentId === "active-mfb") {
+    return <div className="simulation-card-visual cover-active-mfb" aria-hidden="true">
       <span className="cover-active-wire" /><span className="cover-active-r1">R₁</span>
       <span className="cover-active-r2">R₂</span><span className="cover-active-c1">C₁</span>
-      <span className="cover-active-c2">C₂</span><span className="cover-opamp">A</span>
-      <span className="cover-feedback" />
+      <span className="cover-active-c2">C₂</span><span className="cover-opamp">−</span>
+      <span className="cover-feedback">R₃</span><span className="cover-opamp-ground" />
     </div>;
   }
   return <div className="simulation-card-visual cover-cart-pole" aria-hidden="true">

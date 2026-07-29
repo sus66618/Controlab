@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import {
   buildSeriesCircuitLayout,
   buildSpringMassSceneLayout,
-  SALLEN_KEY_TOPOLOGY,
+  MFB_LOW_PASS_TOPOLOGY,
 } from "../lib/simulation/scenes/geometry.ts";
 
 test("弹簧和阻尼器端点落在质量块侧面范围内", () => {
@@ -33,14 +33,17 @@ test("串联电路的导线和元件连续覆盖整个上支路", () => {
   }
 });
 
-test("Sallen-Key 的输入、两条电容支路和反馈支路均落在真实节点上", () => {
-  const topology = SALLEN_KEY_TOPOLOGY;
+test("反相 MFB 的信号、接地和反馈支路均落在真实节点上", () => {
+  const topology = MFB_LOW_PASS_TOPOLOGY;
 
-  assert.deepEqual(topology.signal.end, topology.opAmp.plus);
+  assert.deepEqual(topology.signal.end, topology.node1);
+  assert.deepEqual(topology.r2.end, topology.opAmp.minus);
+  assert.equal(topology.opAmp.plus.x, topology.ground.x);
+  assert.equal(topology.opAmp.plus.y, topology.ground.startY);
   assert.deepEqual(topology.c1.start, topology.node1);
-  assert.deepEqual(topology.c1.end, topology.output);
-  assert.deepEqual(topology.c2.start, topology.node2);
-  assert.equal(topology.c2.end.y, topology.groundY);
-  assert.deepEqual(topology.feedback.start, topology.opAmp.minus);
-  assert.deepEqual(topology.feedback.end, topology.output);
+  assert.equal(topology.c1.end.y, topology.ground.y);
+  assert.deepEqual(topology.r3.start, topology.node1);
+  assert.deepEqual(topology.r3.end, topology.output);
+  assert.deepEqual(topology.c2.start, topology.opAmp.minus);
+  assert.deepEqual(topology.c2.end, topology.output);
 });

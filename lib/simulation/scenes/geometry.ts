@@ -39,18 +39,19 @@ export function buildSeriesCircuitLayout(elementCount: number) {
   return { start, end, elements, wires };
 }
 
-const node1: ScenePoint = { x: 285, y: 160 };
-const node2: ScenePoint = { x: 465, y: 160 };
-const output: ScenePoint = { x: 660, y: 180 };
+const mfbNode1: ScenePoint = { x: 260, y: 160 };
+const mfbOutput: ScenePoint = { x: 680, y: 180 };
+const mfbMinus: ScenePoint = { x: 520, y: 160 };
+const mfbPlus: ScenePoint = { x: 520, y: 220 };
 
-export const SALLEN_KEY_TOPOLOGY = {
-  groundY: 300,
-  node1,
-  node2,
-  output,
-  signal: { start: { x: 65, y: 160 }, end: { x: 520, y: 160 } },
-  c1: { start: node1, end: output },
-  c2: { start: node2, end: { x: node2.x, y: 300 } },
-  opAmp: { plus: { x: 520, y: 160 }, minus: { x: 520, y: 220 } },
-  feedback: { start: { x: 520, y: 220 }, end: output },
+export const MFB_LOW_PASS_TOPOLOGY = {
+  node1: mfbNode1,
+  output: mfbOutput,
+  signal: { start: { x: 65, y: 160 }, end: mfbNode1 },
+  r2: { start: mfbNode1, end: mfbMinus },
+  r3: { start: mfbNode1, end: mfbOutput },
+  c1: { start: mfbNode1, end: { x: mfbNode1.x, y: 300 } },
+  c2: { start: mfbMinus, end: mfbOutput },
+  opAmp: { plus: mfbPlus, minus: mfbMinus },
+  ground: { x: mfbPlus.x, startY: mfbPlus.y, y: 300 },
 } as const;

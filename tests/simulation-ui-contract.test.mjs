@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 test("公共实验外壳不包含对象专属分支和控制器入口", async () => {
   const shell = await readFile(new URL("../components/simulations/PlantLabShell.tsx", import.meta.url), "utf8");
-  for (const forbidden of ["spring-mass", "dc-motor", "passive-rlc", "active-sallen-key", "PID", "LQR", "控制器"]) {
+  for (const forbidden of ["spring-mass", "dc-motor", "passive-rlc", "active-mfb", "PID", "LQR", "控制器"]) {
     assert.doesNotMatch(shell, new RegExp(forbidden, "i"));
   }
   assert.match(shell, /selectedOutput/);
@@ -32,7 +32,7 @@ test("切换输出量时从历史状态重新计算曲线", async () => {
 
 test("五个实验使用与对象对应的专属静态封面", async () => {
   const cover = await readFile(new URL("../components/simulations/ExperimentCoverVisual.tsx", import.meta.url), "utf8");
-  for (const marker of ["cover-spring-mass", "cover-dc-motor", "cover-passive-rlc", "cover-active-sallen-key", "cover-cart-pole"]) {
+  for (const marker of ["cover-spring-mass", "cover-dc-motor", "cover-passive-rlc", "cover-active-mfb", "cover-cart-pole"]) {
     assert.match(cover, new RegExp(marker));
   }
   assert.doesNotMatch(cover, /<svg|animation|@keyframes/i);
@@ -40,7 +40,7 @@ test("五个实验使用与对象对应的专属静态封面", async () => {
 
 test("实验封面样式包含五种装置且没有动画", async () => {
   const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
-  for (const selector of [".cover-spring-mass", ".cover-dc-motor", ".cover-passive-rlc", ".cover-active-sallen-key", ".cover-cart-pole"]) {
+  for (const selector of [".cover-spring-mass", ".cover-dc-motor", ".cover-passive-rlc", ".cover-active-mfb", ".cover-cart-pole"]) {
     assert.match(css, new RegExp(selector.replace(".", "\\.")));
   }
   const coverStyles = css.match(/\/\* 实验封面装置图 \*\/[\s\S]*?(?=\/\*|@media|$)/)?.[0] ?? "";

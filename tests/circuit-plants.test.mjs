@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { buildPassiveRlcModel, passiveRlcDerivative, simplePassiveRlcConfig } from "../lib/simulation/plants/passiveRlc.ts";
-import { DEFAULT_SALLEN_KEY_PARAMS, sallenKeyMetrics, sallenKeyOutputs } from "../lib/simulation/plants/sallenKey.ts";
+import { DEFAULT_MFB_LOW_PASS_PARAMS, mfbLowPassMetrics, mfbLowPassOutputs } from "../lib/simulation/plants/mfbLowPass.ts";
 
 test("串联 RLC 极点满足标准特征方程", () => {
   const model = buildPassiveRlcModel(simplePassiveRlcConfig("series", 4, 2, 0.125));
@@ -21,21 +21,22 @@ test("串并联预设使用各自正确的等效参数", () => {
   assert.equal(buildPassiveRlcModel(parallel).R, 1);
 });
 
-test("等值元件单位增益 Sallen-Key 的自然频率正确", () => {
-  const metrics = sallenKeyMetrics({
-    ...DEFAULT_SALLEN_KEY_PARAMS,
+test("反相 MFB 的直流增益和二阶系数来自实际元件", () => {
+  const metrics = mfbLowPassMetrics({
+    ...DEFAULT_MFB_LOW_PASS_PARAMS,
     R1: 10_000,
-    R2: 10_000,
-    C1: 100e-9,
-    C2: 100e-9,
-    gain: 1,
+    R2: 20_000,
+    R3: 30_000,
+    C1: 1e-6,
+    C2: 200e-9,
   });
-  assert.ok(Math.abs(metrics.omegaN - 1000) < 1e-8);
-  assert.ok(Math.abs(metrics.dcGain - 1) < 1e-12);
+  assert.ok(Math.abs(metrics.dcGain + 3) < 1e-12);
+  assert.ok(Math.abs(metrics.a0 - 8333.333333333334) < 1e-9);
+  assert.ok(Math.abs(metrics.a1 - 183.33333333333334) < 1e-9);
 });
 
 test("输出饱和不篡改理想输出通道", () => {
-  const output = sallenKeyOutputs({ ...DEFAULT_SALLEN_KEY_PARAMS, saturation: 5, saturationEnabled: true }, [8, 2]);
+  const output = mfbLowPassOutputs({ ...DEFAULT_MFB_LOW_PASS_PARAMS, saturation: 5, saturationEnabled: true }, [8, 2]);
   assert.equal(output.ideal, 8);
   assert.equal(output.actual, 5);
 });
