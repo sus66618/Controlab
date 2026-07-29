@@ -11,6 +11,10 @@
 - 鼠标悬停读取曲线坐标
 - SVG 与 2× PNG 高清导出
 - 深色响应式界面，支持桌面端与移动端
+- 模块化首页：系统分析、闭环控制与动力学仿真
+- 一键开启单位负反馈，并实时比较控制前后的响应
+- P、PI、PD、PID、超前与滞后校正器
+- 小车倒立摆非线性仿真，支持 PID/LQR、鼠标扰动、参数调整和位置重置
 
 全部计算均在浏览器本地完成，当前版本无需账号与后端服务。
 
@@ -35,7 +39,9 @@ npm test
 - `hooks/useControlModel.ts`：唯一模型状态及四种编辑入口
 - `lib/control/model.ts`：输入解析、系数与 ZPK 互转
 - `lib/control/analysis.ts`：频域、根轨迹、奈氏图及时域计算
+- `lib/control/feedback.ts`：控制器传函、串联与闭环模型
 - `lib/control/math.ts`：复数和多项式基础运算
+- `lib/simulation/cartPole.ts`：倒立摆动力学与控制律
 
 绘图层只消费统一的分析结果，因此后续可以独立增加 PID、LQR、MPC 或新的实验场景，而不用重写输入系统。
 

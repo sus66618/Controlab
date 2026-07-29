@@ -125,3 +125,5 @@ export function useControlModel() {
     loadModel,
   };
 }
+
+export type ControlModelController = ReturnType<typeof useControlModel>;

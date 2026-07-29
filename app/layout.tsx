@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Controlab · 在线控制实验室",
-  description: "输入传递函数，交互探索时域响应、Bode 图、根轨迹与奈奎斯特图。",
+  description: "交互探索系统模型、闭环控制、PID 校正与倒立摆动力学仿真。",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
 };
 

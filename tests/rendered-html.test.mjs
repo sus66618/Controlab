@@ -12,16 +12,16 @@ async function render() {
   );
 }
 
-test("服务端正确渲染 Controlab 工作台", async () => {
+test("服务端正确渲染 Controlab 模块封面", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
   assert.match(html, /<title>Controlab · 在线控制实验室<\/title>/i);
-  assert.match(html, /连续系统工作台/);
-  assert.match(html, /系统模型/);
-  assert.match(html, /时域响应/);
-  assert.match(html, /表达式/);
-  assert.match(html, /零极点/);
+  assert.match(html, /控制系统学习与仿真平台/);
+  assert.match(html, /系统分析/);
+  assert.match(html, /闭环控制/);
+  assert.match(html, /动力学仿真/);
+  assert.match(html, /小车倒立摆/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
 });

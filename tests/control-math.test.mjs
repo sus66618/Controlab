@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   evaluateTransfer,
   ensureConjugates,
+  feedbackModels,
   modelToZpk,
   parseTransferExpression,
   polynomialRoots,
@@ -10,6 +11,12 @@ import {
   simulateResponse,
   zpkToModel,
 } from "../lib/control.ts";
+import {
+  DEFAULT_CART_POLE_PARAMS,
+  initialCartPoleState,
+  pendulumControlForce,
+  stepCartPole,
+} from "../lib/simulation/cartPole.ts";
 
 const closeTo = (actual, expected, tolerance = 1e-4) => {
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} 应接近 ${expected}`);
@@ -55,4 +62,22 @@ test("单个复数点会自动补共轭点", () => {
   assert.deepEqual(roots, [{ re: -2, im: 3 }, { re: -2, im: -3 }]);
   const model = zpkToModel({ gain: 1, zeros: [], poles: roots });
   assert.deepEqual(model.denominator, [1, 4, 13]);
+});
+
+test("单位负反馈闭环模型计算正确", () => {
+  const plant = { numerator: [1], denominator: [1, 1] };
+  const control = { numerator: [2], denominator: [1] };
+  const result = feedbackModels(plant, control);
+  assert.deepEqual(result.loop, { numerator: [2], denominator: [1, 1] });
+  assert.deepEqual(result.closed, { numerator: [2], denominator: [1, 3] });
+});
+
+test("倒立摆 LQR 能从小角度回到直立平衡", () => {
+  let state = initialCartPoleState(7);
+  for (let index = 0; index < 2400; index += 1) {
+    const force = pendulumControlForce(state, "lqr");
+    state = stepCartPole(state, force, DEFAULT_CART_POLE_PARAMS, 1 / 240);
+  }
+  assert.ok(Math.abs(state.theta) < 0.01, `最终摆角 ${state.theta} rad 应接近 0`);
+  assert.ok(Math.abs(state.x) < 0.02, `最终位置 ${state.x} m 应接近 0`);
 });
