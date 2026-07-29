@@ -508,3 +508,144 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+/* 仿真实验大厅 */
+.simulation-gallery { width: min(1380px, calc(100% - 48px)); margin: 0 auto; padding: 54px 0 72px; }
+.simulation-gallery-hero { max-width: 760px; padding-bottom: 42px; }
+.simulation-gallery-hero h1 { margin: 12px 0 10px; font-size: clamp(32px, 4vw, 58px); font-weight: 560; letter-spacing: -.055em; }
+.simulation-gallery-hero p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
+.simulation-gallery-group { margin-top: 18px; padding-top: 28px; border-top: 1px solid var(--line); }
+.simulation-gallery-group > header { display: flex; justify-content: space-between; align-items: end; gap: 28px; margin-bottom: 16px; }
+.simulation-gallery-group > header span { color: var(--quiet); font: 700 8px "Courier New", monospace; letter-spacing: .18em; }
+.simulation-gallery-group h2 { margin: 6px 0 0; font-size: 20px; }
+.simulation-gallery-group > header p { max-width: 420px; margin: 0; color: var(--muted); font-size: 10px; line-height: 1.6; text-align: right; }
+.simulation-gallery-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.simulation-experiment-card { position: relative; min-width: 0; min-height: 270px; overflow: hidden; padding: 16px; border: 1px solid var(--line); border-radius: 13px; background: linear-gradient(155deg, rgba(18,24,32,.96), rgba(9,13,18,.96)); text-align: left; cursor: pointer; transition: transform .2s, border-color .2s, background .2s; }
+.simulation-experiment-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--experiment-accent) 50%, var(--line)); background: linear-gradient(155deg, rgba(22,29,38,.98), rgba(10,14,19,.98)); }
+.simulation-experiment-card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 75% 10%, color-mix(in srgb, var(--experiment-accent) 11%, transparent), transparent 38%); pointer-events: none; }
+.simulation-experiment-index { position: relative; color: var(--experiment-accent); font: 9px "Courier New", monospace; }
+.simulation-card-visual { position: relative; height: 100px; margin: 16px 0 14px; border: 1px solid rgba(255,255,255,.055); border-radius: 9px; background: #080d12; }
+.simulation-card-visual i { position: absolute; display: block; border: 1px solid var(--experiment-accent); opacity: .68; }
+.simulation-card-visual i:nth-child(1) { width: 44%; height: 1px; left: 12%; top: 51%; }
+.simulation-card-visual i:nth-child(2) { width: 34px; height: 34px; left: 52%; top: calc(51% - 17px); border-radius: 7px; background: color-mix(in srgb, var(--experiment-accent) 9%, transparent); }
+.simulation-card-visual i:nth-child(3) { width: 7px; height: 7px; right: 11%; top: calc(51% - 3px); border-radius: 50%; background: var(--experiment-accent); box-shadow: 0 0 18px color-mix(in srgb, var(--experiment-accent) 55%, transparent); }
+.visual-spring-mass i:nth-child(1) { border-style: dashed; transform: skewX(-28deg); }
+.visual-dc-motor i:nth-child(2) { border-radius: 50%; }
+.visual-passive-rlc i:nth-child(2) { width: 5px; border-width: 0 2px; border-radius: 0; background: none; }
+.visual-active-sallen-key i:nth-child(2) { width: 0; height: 0; border: 25px solid transparent; border-left: 42px solid var(--experiment-accent); border-radius: 0; background: none; opacity: .5; }
+.visual-cart-pole i:nth-child(1) { width: 4px; height: 70px; left: 50%; top: 12%; transform: rotate(-8deg); background: var(--experiment-accent); }
+.simulation-experiment-card small { color: var(--experiment-accent); font: 8px "Courier New", monospace; }
+.simulation-experiment-card h3 { margin: 7px 0 6px; font-size: 17px; }
+.simulation-experiment-card p { min-height: 32px; margin: 0; color: var(--muted); font-size: 9px; line-height: 1.65; }
+.simulation-experiment-card b { display: block; margin-top: 13px; color: #aeb8c2; font-size: 9px; font-weight: 500; }
+
+/* 被控对象实验统一外壳 */
+.plant-lab { width: min(1500px, calc(100% - 36px)); margin: 0 auto; padding: 30px 0 56px; }
+.plant-lab-heading { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 14px; }
+.plant-lab-heading h1 { margin: 7px 0 5px; font-size: clamp(24px, 2.6vw, 38px); letter-spacing: -.04em; }
+.plant-lab-heading p { margin: 0; color: var(--muted); font-size: 10px; }
+.plant-lab-status { display: flex; align-items: center; gap: 6px; }
+.plant-lab-status span { margin-right: 8px; color: var(--accent); font: 11px "Courier New", monospace; }
+.plant-lab-status button, .circuit-component-group button { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 7px; background: #0b1016; color: #9da8b4; font-size: 9px; cursor: pointer; }
+.plant-lab-status button:hover, .circuit-component-group button:hover:not(:disabled) { border-color: #4f653d; color: var(--accent); }
+.plant-lab-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(285px, .55fr); gap: 10px; align-items: start; }
+.plant-stage-card, .plant-parameter-card, .plant-input-card, .plant-output-card, .plant-model-card { min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: rgba(12,17,23,.82); }
+.plant-stage-card { min-height: 390px; overflow: hidden; }
+.plant-parameter-card { grid-row: span 2; padding: 16px; }
+.plant-input-card { padding: 16px; }
+.plant-output-card { padding: 16px; }
+.plant-model-card { grid-column: 1 / -1; display: grid; grid-template-columns: 180px minmax(260px, 1fr) minmax(300px, 1.1fr); gap: 18px; align-items: center; padding: 16px; }
+.plant-parameter-card > header span, .plant-input-card > header span, .plant-output-card > header span, .plant-model-card > header span, .plant-secondary-input header span { color: var(--quiet); font: 700 7px "Courier New", monospace; letter-spacing: .16em; }
+.plant-parameter-card h2, .plant-input-card h2, .plant-output-card h2, .plant-model-card h2 { margin: 5px 0 12px; font-size: 14px; }
+.plant-output-card > header { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.plant-output-card select, .plant-select select { height: 32px; padding: 0 9px; border: 1px solid var(--line); border-radius: 7px; background: #080d12; color: #cbd4dc; font-size: 9px; outline: none; }
+.plant-output-card .plot { max-height: 310px; }
+.plant-model-equations { overflow-x: auto; color: #dce4ea; font-size: 13px; }
+.plant-model-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+.plant-model-metrics span { min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; color: var(--quiet); font-size: 8px; }
+.plant-model-metrics strong { display: block; overflow: hidden; margin-top: 4px; color: var(--accent); font: 10px "Courier New", monospace; white-space: nowrap; text-overflow: ellipsis; }
+.plant-parameters { display: grid; gap: 14px; }
+.plant-parameter-section { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.plant-parameter-section > strong { display: block; margin-bottom: 9px; color: #aeb8c2; font-size: 9px; }
+.plant-parameter-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.plant-number { display: block; min-width: 0; }
+.plant-number > span, .plant-select > span { display: block; overflow: hidden; margin-bottom: 5px; color: var(--quiet); font-size: 8px; white-space: nowrap; text-overflow: ellipsis; }
+.plant-number input { width: 100%; height: 36px; padding: 0 9px; border: 1px solid #26313d; border-radius: 7px; background: #080d12; color: #dce4ea; font: 10px "Courier New", monospace; outline: none; appearance: textfield; -moz-appearance: textfield; }
+.plant-number input:focus { border-color: #617e42; box-shadow: 0 0 0 2px rgba(183,255,74,.045); }
+.plant-number input::-webkit-inner-spin-button, .plant-number input::-webkit-outer-spin-button { margin: 0; appearance: none; -webkit-appearance: none; }
+.plant-parameters details { border-top: 1px solid var(--line); }
+.plant-parameters summary { padding: 11px 0 0; color: #8e9aa5; font-size: 9px; cursor: pointer; }
+.plant-parameter-note { margin: 0; color: var(--muted); font-size: 8px; line-height: 1.6; }
+.plant-check { display: flex; align-items: center; gap: 7px; color: #aeb8c2; font-size: 9px; }
+.plant-check input { accent-color: var(--accent); }
+.plant-signal-editor .mini-switch { overflow-x: auto; }
+.plant-signal-editor .mini-switch button { min-width: 52px; white-space: nowrap; }
+.plant-signal-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 10px; }
+.plant-force-slider { display: grid; gap: 8px; margin-top: 12px; color: var(--accent); font: 10px "Courier New", monospace; }
+.plant-force-slider input { width: 100%; accent-color: var(--accent); }
+.plant-secondary-input { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.plant-secondary-input header { grid-column: 1 / -1; display: flex; justify-content: space-between; }
+.plant-secondary-input strong { font-size: 9px; }
+.plant-error { margin: 0; padding: 8px 12px; color: #ff9a8e; font-size: 9px; }
+.circuit-component-group { padding-top: 11px; border-top: 1px solid var(--line); }
+.circuit-component-group > header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+.circuit-component-group > header strong { font-size: 9px; }
+.circuit-component-group button { height: 28px; padding: 0 9px; }
+.circuit-component-group button:disabled { opacity: .3; cursor: not-allowed; }
+.circuit-component-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) 30px; gap: 6px; align-items: end; margin-top: 6px; }
+.circuit-component-row > button { padding: 0; }
+
+/* 机械与电路场景 */
+.spring-mass-scene, .dc-motor-scene, .circuit-scene { min-height: 388px; display: grid; place-items: center; background: radial-gradient(circle at 50% 45%, rgba(91,115,129,.1), transparent 48%), #080d12; }
+.spring-mass-scene svg, .dc-motor-scene svg, .circuit-scene svg { display: block; width: 100%; height: auto; }
+.plant-floor, .plant-wall, .spring-line, .damper-line path, .damper-line rect, .circuit-wire, .circuit-element path, .circuit-element rect, .circuit-source path, .circuit-source circle, .motor-wire, .motor-case, .motor-cap, .motor-rotor, .motor-spoke, .motor-shaft, .motor-load, .motor-direction, .opamp path { fill: none; stroke: #52616e; stroke-width: 2; }
+.spring-line, .circuit-element path { stroke: var(--accent); }
+.damper-line rect { fill: #111a22; }
+.mass-body { stroke: #52616e; stroke-width: 1.5; }
+.mass-wheel { fill: #090d12; stroke: #6b7a86; }
+.mass-body + .mass-wheel { stroke: var(--accent); }
+.spring-mass-scene text, .dc-motor-scene text, .circuit-scene text { fill: #8e9aa5; font: 10px "Courier New", monospace; text-anchor: middle; }
+.force-indicator path, .motor-direction, .circuit-flow { fill: none; stroke: var(--accent); stroke-width: 3; filter: drop-shadow(0 0 6px rgba(183,255,74,.35)); }
+.force-indicator.negative path, .motor-direction.negative, .circuit-flow.negative { stroke: #ff9b62; }
+.scene-caption { fill: #53606c !important; font-size: 8px !important; text-anchor: start !important; }
+.motor-case { fill: url(#motor-case); }
+.motor-cap, .motor-load { fill: #131d25; }
+.motor-rotor { stroke: var(--accent); }
+.motor-spoke { stroke: #72818c; }
+.motor-shaft { stroke-width: 9; }
+.motor-terminal.positive, .motor-wire.positive { stroke: #ff795f; fill: #ff795f; }
+.motor-terminal.negative, .motor-wire.negative { stroke: #55d6be; fill: #55d6be; }
+.motor-readouts text, .circuit-readouts text { text-anchor: start; }
+.circuit-mode-label { fill: var(--accent) !important; text-anchor: start !important; letter-spacing: .12em; }
+.circuit-source text, .circuit-element text { text-anchor: middle; }
+.circuit-flow { stroke-dasharray: 8 7; animation: circuit-flow 1s linear infinite; }
+.opamp path:first-child { fill: rgba(177,140,255,.05); stroke: #b18cff; }
+.opamp text { fill: #b18cff; font-size: 14px; }
+.saturation-meter rect:first-child { fill: #1b2530; }
+.saturation-meter rect:nth-child(2) { fill: var(--accent); }
+.saturation-meter text { fill: var(--quiet); font-size: 7px; text-anchor: start; }
+.saturation-meter.clipping rect:nth-child(2) { fill: #ff765f; filter: url(#active-circuit-glow); }
+@keyframes circuit-flow { to { stroke-dashoffset: -30; } }
+
+@media (max-width: 1100px) {
+  .simulation-gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .plant-lab-grid { grid-template-columns: minmax(0, 1fr) 310px; }
+  .plant-model-card { grid-template-columns: 140px 1fr; }
+  .plant-model-metrics { grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .simulation-gallery { width: calc(100% - 24px); padding-top: 32px; }
+  .simulation-gallery-group > header, .plant-lab-heading { display: block; }
+  .simulation-gallery-group > header p { margin-top: 10px; text-align: left; }
+  .simulation-gallery-grid { grid-template-columns: 1fr; }
+  .simulation-experiment-card { min-height: 245px; }
+  .plant-lab { width: calc(100% - 20px); padding-top: 20px; }
+  .plant-lab-status { margin-top: 14px; overflow-x: auto; }
+  .plant-lab-grid { grid-template-columns: 1fr; }
+  .plant-parameter-card { grid-row: auto; }
+  .plant-model-card { grid-column: auto; grid-template-columns: 1fr; }
+  .plant-model-metrics { grid-column: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .spring-mass-scene, .dc-motor-scene, .circuit-scene { min-height: 280px; overflow-x: auto; }
+  .spring-mass-scene svg, .dc-motor-scene svg, .circuit-scene svg { min-width: 680px; }
+}

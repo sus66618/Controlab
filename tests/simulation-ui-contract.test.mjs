@@ -10,3 +10,15 @@ test("公共实验外壳不包含对象专属分支和控制器入口", async ()
   assert.match(shell, /selectedOutput/);
   assert.match(shell, /onReset/);
 });
+
+test("实验大厅与参数输入使用统一视觉契约", async () => {
+  const gallery = await readFile(new URL("../components/simulations/SimulationGallery.tsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(gallery, /simulation-gallery/);
+  assert.match(gallery, /groupExperiments/);
+  assert.match(css, /\.simulation-gallery/);
+  assert.match(css, /\.plant-lab-grid/);
+  assert.match(css, /\.plant-number input/);
+  assert.match(css, /appearance:\s*textfield/);
+  assert.match(css, /::-webkit-inner-spin-button/);
+});
