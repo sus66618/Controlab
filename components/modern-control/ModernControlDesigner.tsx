@@ -63,10 +63,10 @@ export function ModernControlDesigner({ model }: { model: StateSpacePreset }) {
     <aside className="modern-design-panel">
       <section className="design-stage">
         <header><span>01</span><div><small>STATE FEEDBACK</small><h2>状态反馈</h2></div></header>
-        <Segmented value={controllerMode} options={[["lqr", "LQR"], ["poles", "极点配置"], ["manual", "手动 K"]]} onChange={setControllerMode} />
+        <Segmented value={controllerMode} options={[["lqr", "LQR"], ["poles", "极点配置"], ["manual", "自定义增益"]]} onChange={setControllerMode} />
         {controllerMode === "lqr" && <><WeightEditor label="Q 对角" prefix="q" values={q} onChange={setQ} /><WeightEditor label="R 对角" prefix="r" values={r} onChange={setR} /></>}
         {controllerMode === "poles" && <PoleEditor values={controllerPoles} onChange={setControllerPoles} disabled={inputCount !== 1} />}
-        {controllerMode === "manual" && <GainEditor label="K" values={manualK} onChange={setManualK} />}
+        {controllerMode === "manual" && <><p className="stage-note">输入已经计算好的状态反馈矩阵 K；初学时建议先使用 LQR 或极点配置。</p><GainEditor label="K" values={manualK} onChange={setManualK} /></>}
         <InlineStatus ok={!controller.error} text={controller.error || `K · ${inputCount}×${order}`} />
       </section>
 
