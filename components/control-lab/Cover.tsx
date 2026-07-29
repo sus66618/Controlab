@@ -43,7 +43,7 @@ export function Cover({ model, onOpenModule }: {
         <span className="module-index">03 / IDENTIFICATION</span>
         <div className="module-icon identification-icon"><i /><i /><i /></div>
         <h2>{moduleLabel("identification")}</h2>
-        <p>从输入输出数据反推 ARX 模型，并用自由仿真检验拟合质量。</p>
+        <p>从输入输出数据辨识动态模型，并用独立验证检验可信度。</p>
         <MathFormula className="module-formula" latex="A(q^{-1})y=B(q^{-1})u+e" />
         <b>从数据建模 →</b>
       </button>
