@@ -13,7 +13,12 @@ import {
 } from "../lib/control.ts";
 import {
   DEFAULT_CART_POLE_PARAMS,
+  DEFAULT_EXCITATION,
+  DEFAULT_LQR_CONFIG,
+  designLqrGains,
+  excitationValue,
   initialCartPoleState,
+  linearizeCartPole,
   pendulumControlForce,
   stepCartPole,
 } from "../lib/simulation/cartPole.ts";
@@ -80,4 +85,33 @@ test("倒立摆 LQR 能从小角度回到直立平衡", () => {
   }
   assert.ok(Math.abs(state.theta) < 0.01, `最终摆角 ${state.theta} rad 应接近 0`);
   assert.ok(Math.abs(state.x) < 0.02, `最终位置 ${state.x} m 应接近 0`);
+});
+
+test("倒立摆线性化模型随物理参数变化且完全可控", () => {
+  const base = linearizeCartPole(DEFAULT_CART_POLE_PARAMS);
+  const longerPole = linearizeCartPole({ ...DEFAULT_CART_POLE_PARAMS, poleLength: 0.75 });
+  assert.equal(base.controllabilityRank, 4);
+  assert.equal(base.positionTransfer.denominator.length, 5);
+  assert.notDeepEqual(base.A, longerPole.A);
+  assert.notDeepEqual(base.angleTransfer.denominator, longerPole.angleTransfer.denominator);
+});
+
+test("阶跃、斜坡、正弦与脉冲输入按配置生成", () => {
+  closeTo(excitationValue({ ...DEFAULT_EXCITATION, type: "step", amplitude: 2, startTime: 1 }, 1.5), 2);
+  closeTo(excitationValue({ ...DEFAULT_EXCITATION, type: "ramp", amplitude: 0.5, startTime: 1 }, 3), 1);
+  closeTo(excitationValue({ ...DEFAULT_EXCITATION, type: "sine", amplitude: 2, frequency: 0.5, startTime: 0 }, 0.5), 2);
+  closeTo(excitationValue({ ...DEFAULT_EXCITATION, type: "pulse", amplitude: 3, startTime: 1, duration: 0.4 }, 1.2), 3);
+  closeTo(excitationValue({ ...DEFAULT_EXCITATION, type: "pulse", amplitude: 3, startTime: 1, duration: 0.4 }, 1.5), 0);
+});
+
+test("Q/R 自动设计的 LQR 能稳定默认倒立摆", () => {
+  const gains = designLqrGains(DEFAULT_CART_POLE_PARAMS, DEFAULT_LQR_CONFIG.q, DEFAULT_LQR_CONFIG.r);
+  assert.equal(gains.length, 4);
+  let state = initialCartPoleState(7);
+  for (let index = 0; index < 2400; index += 1) {
+    const force = pendulumControlForce(state, "lqr", { lqr: { ...DEFAULT_LQR_CONFIG, gains } });
+    state = stepCartPole(state, force, DEFAULT_CART_POLE_PARAMS, 1 / 240);
+  }
+  assert.ok(Math.abs(state.theta) < 0.01);
+  assert.ok(Math.abs(state.x) < 0.03);
 });
