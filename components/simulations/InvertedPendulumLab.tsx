@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppHeader } from "@/components/control-lab/AppHeader";
+import { ModuleNav } from "@/components/control-lab/ModuleNav";
 import { MathFormula } from "@/components/math/MathFormula";
+import type { ControlModuleId } from "@/lib/moduleCatalog";
 import { formatNumber } from "@/lib/control";
 import { transferToLatex } from "@/lib/math/latex";
 import {
@@ -30,7 +32,7 @@ type SideTab = "controller" | "input" | "model" | "principle";
 type HistoryPoint = { time: number; theta: number; x: number; force: number; reference: number; disturbance: number };
 type SavedRun = { label: string; points: HistoryPoint[] } | null;
 
-export function InvertedPendulumLab({ onHome, onWorkbench }: { onHome: () => void; onWorkbench: () => void }) {
+export function InvertedPendulumLab({ onHome, onNavigate }: { onHome: () => void; onNavigate: (module: ControlModuleId) => void }) {
   const [state, setState] = useState<CartPoleState>(() => initialCartPoleState());
   const [params, setParams] = useState<CartPoleParams>(DEFAULT_CART_POLE_PARAMS);
   const [controllerEnabled, setControllerEnabled] = useState(true);
@@ -191,7 +193,7 @@ export function InvertedPendulumLab({ onHome, onWorkbench }: { onHome: () => voi
   };
 
   return <main className="controlab-app simulation-page">
-    <AppHeader title="动力学仿真 / Cart–Pole" onHome={onHome} trailing={<><button className="simulation-shortcut" onClick={onWorkbench}>传函工作台</button><div className="compute-status"><i />240 Hz 动力学</div></>} />
+    <AppHeader title="动力学仿真 / Cart–Pole" onHome={onHome} trailing={<ModuleNav current="simulation" onNavigate={onNavigate} />} />
     <div className="simulation-shell teaching-layout">
       <section className="simulation-main">
         <div className="simulation-heading">

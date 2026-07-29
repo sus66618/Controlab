@@ -53,6 +53,23 @@ export function identificationMetrics(measured: number[], estimated: number[]) {
 
 export function samplesToCsv(samples: IdentificationSample[]) { return ["t,u,y", ...samples.map((sample) => `${sample.t.toFixed(3)},${sample.u.toFixed(5)},${sample.y.toFixed(5)}`)].join("\n"); }
 
+export function arxPolynomialsLatex(model: ArxModel) {
+  const a = polynomialLatex("A", [1, ...model.a]);
+  const b = polynomialLatex("B", model.b);
+  const delay = model.nk === 0 ? "" : `q^{-${model.nk}}`;
+  return { a, b, model: `A(q^{-1})y(k)=${delay}B(q^{-1})u(k)+e(k)` };
+}
+
+function polynomialLatex(name: "A" | "B", coefficients: number[]) {
+  const terms = coefficients.map((value, index) => {
+    const magnitude = Number(Math.abs(value).toPrecision(6));
+    const variable = index === 0 ? "" : `q^{-${index}}`;
+    if (index === 0) return `${value < 0 ? "-" : ""}${magnitude}${variable}`;
+    return `${value < 0 ? "-" : "+"}${magnitude}${variable}`;
+  }).join("");
+  return `${name}(q^{-1})=${terms}`;
+}
+
 function leastSquares(rows: number[][], target: number[]) {
   const columns = rows[0].length;
   const normal = Array.from({ length: columns }, (_, row) => Array.from({ length: columns }, (_, column) => rows.reduce((sum, values) => sum + values[row] * values[column], 0)));

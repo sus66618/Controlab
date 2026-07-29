@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { fitArx, identificationMetrics, parseIdentificationCsv, simulateArx } from "../lib/systemIdentification.ts";
+import { arxPolynomialsLatex, fitArx, identificationMetrics, parseIdentificationCsv, simulateArx } from "../lib/systemIdentification.ts";
 
 const closeTo = (actual, expected, tolerance = 1e-3) => assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} 应接近 ${expected}`);
 
@@ -37,4 +37,13 @@ test("辨识指标在完全拟合时返回 100%", () => {
   const metrics = identificationMetrics([0, 1, 2, 3], [0, 1, 2, 3]);
   closeTo(metrics.rmse, 0);
   closeTo(metrics.fitPercent, 100);
+});
+
+test("ARX 展示公式分开表达输出记忆、输入记忆和纯延迟", () => {
+  const latex = arxPolynomialsLatex({ a: [-1.2, 0.35], b: [0.08, -0.02], na: 2, nb: 2, nk: 1 });
+  assert.deepEqual(latex, {
+    a: "A(q^{-1})=1-1.2q^{-1}+0.35q^{-2}",
+    b: "B(q^{-1})=0.08-0.02q^{-1}",
+    model: "A(q^{-1})y(k)=q^{-1}B(q^{-1})u(k)+e(k)",
+  });
 });

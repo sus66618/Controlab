@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AppHeader } from "@/components/control-lab/AppHeader";
+import { ModuleNav } from "@/components/control-lab/ModuleNav";
 import { Plot } from "@/components/control-lab/Plot";
 import { MathFormula } from "@/components/math/MathFormula";
 import { ModernControlDesigner } from "@/components/modern-control/ModernControlDesigner";
@@ -17,6 +18,7 @@ import {
   STATE_SPACE_PRESETS,
 } from "@/lib/stateSpace";
 import type { LinearStability, StateInputConfig, StateSpacePreset } from "@/lib/stateSpace";
+import type { ControlModuleId } from "@/lib/moduleCatalog";
 
 type MatrixKey = "A" | "B" | "C" | "D";
 type ViewTab = "state" | "output" | "trajectory" | "eigen";
@@ -26,7 +28,7 @@ type WorkspaceMode = "model" | "design";
 const COLORS = ["#b7ff4a", "#55d6be", "#f3ac58", "#b18cff", "#ff7e72", "#6f9dff"];
 const INPUT_NAMES: Record<StateInputConfig["kind"], string> = { zero: "零输入", step: "阶跃", sine: "正弦", ramp: "斜坡" };
 
-export function StateSpaceLab({ onHome, onTransfer, onSimulation }: { onHome: () => void; onTransfer: () => void; onSimulation: () => void }) {
+export function StateSpaceLab({ onHome, onNavigate }: { onHome: () => void; onNavigate: (module: ControlModuleId) => void }) {
   const [model, setModel] = useState(createInitialStateSpaceModel);
   const [view, setView] = useState<ViewTab>("state");
   const [detail, setDetail] = useState<DetailTab>(null);
@@ -80,10 +82,7 @@ export function StateSpaceLab({ onHome, onTransfer, onSimulation }: { onHome: ()
   };
 
   return <main className="controlab-app matrix-studio-page">
-    <AppHeader title="状态空间工作台 / Modern Control" onHome={onHome} trailing={<>
-      <button className="simulation-shortcut" onClick={onTransfer}>传函工作台</button>
-      <button className="simulation-shortcut" onClick={onSimulation}>倒立摆实验</button>
-    </>} />
+    <AppHeader title="现代控制 / Modern Control" onHome={onHome} trailing={<ModuleNav current="modern" onNavigate={onNavigate} />} />
 
     <section className="matrix-studio">
       <nav className="modern-workspace-switch" aria-label="现代控制工作区">

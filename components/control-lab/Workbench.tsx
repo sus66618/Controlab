@@ -12,11 +12,13 @@ import {
 import type { ControllerConfig, InputSignal } from "@/lib/control";
 import type { ControlModelController } from "@/hooks/useControlModel";
 import { AppHeader } from "./AppHeader";
+import { ModuleNav } from "./ModuleNav";
 import { ControllerPanel } from "./ControllerPanel";
 import { downloadCharts } from "./chartExport";
 import { ModelEditor } from "./ModelEditor";
 import { Plot } from "./Plot";
 import { RootEditor } from "./RootEditor";
+import type { ControlModuleId } from "@/lib/moduleCatalog";
 
 type AnalysisTab = "response" | "bode" | "root" | "nyquist";
 
@@ -33,17 +35,15 @@ const SIGNALS: Array<{ key: InputSignal; label: string }> = [
   { key: "sine", label: "正弦" },
 ];
 
-export function Workbench({ controller, initialClosedLoop, onHome, onSimulation, onStateSpace }: {
+export function Workbench({ controller, onHome, onNavigate }: {
   controller: ControlModelController;
-  initialClosedLoop: boolean;
   onHome: () => void;
-  onSimulation: () => void;
-  onStateSpace: () => void;
+  onNavigate: (module: ControlModuleId) => void;
 }) {
   const [tab, setTab] = useState<AnalysisTab>("response");
   const [signal, setSignal] = useState<InputSignal>("step");
   const [duration, setDuration] = useState(12);
-  const [closedLoop, setClosedLoop] = useState(initialClosedLoop);
+  const [closedLoop, setClosedLoop] = useState(false);
   const [controllerConfig, setControllerConfig] = useState<ControllerConfig>(DEFAULT_CONTROLLER);
 
   const computed = useMemo(() => {
@@ -67,9 +67,8 @@ export function Workbench({ controller, initialClosedLoop, onHome, onSimulation,
   const exportIds = tab === "bode" ? ["controlab-bode-magnitude", "controlab-bode-phase"] : `controlab-${tab}`;
 
   return <main className="controlab-app">
-    <AppHeader title={closedLoop ? "闭环控制工作台 / Feedback Control" : "系统分析工作台 / Plant Analysis"} onHome={onHome} trailing={<>
-      <button className="simulation-shortcut" onClick={onStateSpace}>状态空间</button>
-      <button className="simulation-shortcut" onClick={onSimulation}>倒立摆实验</button>
+    <AppHeader title="系统分析 / System Analysis" onHome={onHome} trailing={<>
+      <ModuleNav current="analysis" onNavigate={onNavigate} />
       <label className={`feedback-toggle ${closedLoop ? "on" : ""}`}><span>闭环控制</span><input type="checkbox" checked={closedLoop} onChange={(event) => setClosedLoop(event.target.checked)} /><i /></label>
     </>} />
 
