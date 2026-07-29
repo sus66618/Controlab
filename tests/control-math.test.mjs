@@ -24,6 +24,7 @@ import {
   stepCartPole,
 } from "../lib/simulation/cartPole.ts";
 import { polynomialToLatex, transferToLatex } from "../lib/math/latex.ts";
+import { analyzeStateSpace, sensorMatrix, simulateStateSpace, STATE_SPACE_PRESETS } from "../lib/stateSpace.ts";
 
 const closeTo = (actual, expected, tolerance = 1e-4) => {
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} 应接近 ${expected}`);
@@ -130,4 +131,27 @@ test("传递函数可以转换为规范的 LaTeX", () => {
   assert.equal(polynomialToLatex([1, 4, 25]), "s^{2} + 4s + 25");
   assert.equal(polynomialToLatex([0, -1.2434, 0, 0]), "-1.2434s^{2}");
   assert.equal(transferToLatex([25], [1, 4, 25]), "\\frac{25}{s^{2} + 4s + 25}");
+});
+
+test("状态空间能控性与能观性秩计算正确", () => {
+  const spring = STATE_SPACE_PRESETS.find((preset) => preset.id === "mass-spring");
+  const analysis = analyzeStateSpace(spring.A, spring.B, sensorMatrix(2, [0]));
+  assert.equal(analysis.controllabilityRank, 2);
+  assert.equal(analysis.observabilityRank, 2);
+  assert.ok(analysis.eigenvalues.every((value) => value.re < 0));
+});
+
+test("关闭传感器或执行器会如实降低系统性质", () => {
+  const demo = STATE_SPACE_PRESETS.find((preset) => preset.id === "sensor-demo");
+  const hiddenState = analyzeStateSpace(demo.A, demo.B, sensorMatrix(2, [0]));
+  const noActuator = analyzeStateSpace(demo.A, [0, 0], sensorMatrix(2, [0, 1]));
+  assert.equal(hiddenState.observabilityRank, 1);
+  assert.equal(noActuator.controllabilityRank, 0);
+});
+
+test("稳定状态空间模型的自由响应回到原点", () => {
+  const spring = STATE_SPACE_PRESETS.find((preset) => preset.id === "mass-spring");
+  const samples = simulateStateSpace(spring.A, spring.B, spring.initial, 0, spring.duration);
+  const final = samples.at(-1).state;
+  assert.ok(Math.hypot(...final) < 0.02);
 });

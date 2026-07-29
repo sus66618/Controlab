@@ -27,7 +27,7 @@ export function Cover({ model, onOpenAnalysis, onOpenClosedLoop, onOpenSimulatio
         <span className="module-index">01 / PLANT</span>
         <div className="module-icon plant-icon"><i /><i /><i /></div>
         <h2>系统分析</h2>
-        <p>建立被控对象，观察时域、频域、根轨迹与奈氏图。</p>
+        <p>从传递函数进入状态空间，观察时域、频域、模态与系统内部状态。</p>
         <MathFormula className="module-formula" latex={transferToLatex(model.numerator, model.denominator)} />
         <b>进入工作台 →</b>
       </button>

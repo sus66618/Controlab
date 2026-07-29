@@ -33,11 +33,12 @@ const SIGNALS: Array<{ key: InputSignal; label: string }> = [
   { key: "sine", label: "正弦" },
 ];
 
-export function Workbench({ controller, initialClosedLoop, onHome, onSimulation }: {
+export function Workbench({ controller, initialClosedLoop, onHome, onSimulation, onStateSpace }: {
   controller: ControlModelController;
   initialClosedLoop: boolean;
   onHome: () => void;
   onSimulation: () => void;
+  onStateSpace: () => void;
 }) {
   const [tab, setTab] = useState<AnalysisTab>("response");
   const [signal, setSignal] = useState<InputSignal>("step");
@@ -67,6 +68,7 @@ export function Workbench({ controller, initialClosedLoop, onHome, onSimulation 
 
   return <main className="controlab-app">
     <AppHeader title={closedLoop ? "闭环控制工作台 / Feedback Control" : "系统分析工作台 / Plant Analysis"} onHome={onHome} trailing={<>
+      <button className="simulation-shortcut" onClick={onStateSpace}>状态空间</button>
       <button className="simulation-shortcut" onClick={onSimulation}>倒立摆实验</button>
       <label className={`feedback-toggle ${closedLoop ? "on" : ""}`}><span>闭环控制</span><input type="checkbox" checked={closedLoop} onChange={(event) => setClosedLoop(event.target.checked)} /><i /></label>
     </>} />
