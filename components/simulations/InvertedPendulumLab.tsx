@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppHeader } from "@/components/control-lab/AppHeader";
-import { formatNumber, formatPolynomial } from "@/lib/control";
+import { MathFormula } from "@/components/math/MathFormula";
+import { formatNumber } from "@/lib/control";
+import { transferToLatex } from "@/lib/math/latex";
 import {
   DEFAULT_CART_POLE_PARAMS,
   DEFAULT_EXCITATION,
@@ -252,13 +254,13 @@ function ControllerEditor({ enabled, setEnabled, type, setType, pid, setPid, lqr
     <div className="sim-card-head"><div><span className="section-label">FEEDBACK</span><h2>控制器设计</h2></div><label className={`feedback-toggle ${enabled ? "on" : ""}`}><input aria-label="倒立摆控制器" type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} /><i /></label></div>
     <div className="sim-controller-switch"><button className={type === "pid" ? "active" : ""} onClick={() => setType("pid")}>PID</button><button className={type === "lqr" ? "active" : ""} onClick={() => setType("lqr")}>LQR</button></div>
     {type === "pid" ? <>
-      <code className="controller-equation">u = Kpθ + Ki∫θdt + Kdθ̇ + Kx(x−r) + Kvẋ</code>
+      <MathFormula className="controller-equation" latex="u=K_p\theta+K_i\int\theta\,dt+K_d\dot{\theta}+K_x(x-r)+K_v\dot{x}" display />
       <div className="sim-field-grid">
         {(["kp", "ki", "kd", "kx", "kv", "maxForce"] as const).map((key) => <NumberField key={key} label={{ kp: "Kp", ki: "Ki", kd: "Kd", kx: "Kx", kv: "Kv", maxForce: "限幅/N" }[key]} value={pid[key]} onChange={(value) => setPid({ ...pid, [key]: value })} />)}
       </div>
     </> : <>
       <div className="design-mode"><button className={designMode === "weights" ? "active" : ""} onClick={() => setDesignMode("weights")}>Q/R 设计</button><button className={designMode === "gain" ? "active" : ""} onClick={() => setDesignMode("gain")}>直接输入 K</button></div>
-      <code className="controller-equation">u = Kx(x−r) + Kẋẋ + Kθθ + Kθ̇θ̇</code>
+      <MathFormula className="controller-equation" latex="u=K_x(x-r)+K_{\dot{x}}\dot{x}+K_\theta\theta+K_{\dot{\theta}}\dot{\theta}" display />
       {designMode === "weights" ? <div className="sim-field-grid">
         {lqr.q.map((value, index) => <NumberField key={index} label={["Qx", "Qẋ", "Qθ", "Qθ̇"][index]} value={value} onChange={(next) => { const q = [...lqr.q] as LqrControllerConfig["q"]; q[index] = next; setLqr({ ...lqr, q }); }} />)}
         <NumberField label="R" value={lqr.r} onChange={(value) => setLqr({ ...lqr, r: value })} /><NumberField label="限幅/N" value={lqr.maxForce} onChange={(value) => setLqr({ ...lqr, maxForce: value })} />
@@ -309,12 +311,12 @@ function PrinciplePanel({ controllerType }: { controllerType: "pid" | "lqr" }) {
     <div className="sim-card-head"><div><span className="section-label">HOW IT WORKS</span><h2>结构与建模</h2></div></div>
     <div className="feedback-diagram" aria-label="倒立摆闭环结构图"><span>r(t)</span><i>→</i><b>{controllerType.toUpperCase()}</b><i>→</i><b>小车倒立摆</b><i>→</i><span>x, θ</span><em>状态反馈 ↩</em><small>扰动 d(t) 在执行器入口叠加</small></div>
     <div className="equation-list">
-      <code>(M+m)ẍ + bẋ + ml(θ̈cosθ−θ̇²sinθ) = u+d</code>
-      <code>(I+ml²)θ̈ − mgl sinθ = −ml ẍcosθ</code>
+      <MathFormula latex="(M+m)\ddot{x}+b\dot{x}+ml(\ddot{\theta}\cos\theta-\dot{\theta}^{2}\sin\theta)=u+d" display />
+      <MathFormula latex="(I+ml^{2})\ddot{\theta}-mgl\sin\theta=-ml\ddot{x}\cos\theta" display />
     </div>
-    <p>本实验把摆杆视作均匀细杆，取 <code>I=ml²/3</code>；这里的 <code>l</code> 是转轴到质心的距离。</p>
-    <p>状态取 <code>[x, ẋ, θ, θ̇]</code>。直立点本身不稳定：没有反馈时，任意微小角度都会被重力放大。</p>
-    <p>PID 直接组合摆角误差、积分和变化率；LQR 同时权衡四个状态与控制能量，并由 <code>Q/R</code> 决定取舍。</p>
+    <p>本实验把摆杆视作均匀细杆，取 <MathFormula latex="I=ml^2/3" />；这里的 <MathFormula latex="l" /> 是转轴到质心的距离。</p>
+    <p>状态取 <MathFormula latex="[x,\dot{x},\theta,\dot{\theta}]" />。直立点本身不稳定：没有反馈时，任意微小角度都会被重力放大。</p>
+    <p>PID 直接组合摆角误差、积分和变化率；LQR 同时权衡四个状态与控制能量，并由 <MathFormula latex="Q/R" /> 决定取舍。</p>
     <p>参数变化先改变非线性方程，再改变线性化矩阵、传函以及合适的控制器增益。</p>
   </section>;
 }
@@ -351,7 +353,7 @@ function NumberField({ label, value, onChange }: { label: string; value: number;
   </div>;
 }
 function SignalValue({ label, value, unit }: { label: string; value: number; unit: string }) { return <div><span>{label}</span><strong>{formatNumber(value, 2)} <small>{unit}</small></strong></div>; }
-function ModelFormula({ label, numerator, denominator }: { label: string; numerator: number[]; denominator: number[] }) { return <div className="model-formula"><span>{label}</span><code><b>{formatPolynomial(numerator)}</b><i />{formatPolynomial(denominator)}</code></div>; }
+function ModelFormula({ label, numerator, denominator }: { label: string; numerator: number[]; denominator: number[] }) { return <div className="model-formula"><span>{label}</span><MathFormula latex={transferToLatex(numerator, denominator)} display /></div>; }
 function Matrix({ value }: { value: number[][] }) { return <div className="matrix">{value.map((row, index) => <code key={index}>[{row.map((item) => formatNumber(item, 3).padStart(7, " ")).join("  ")}]</code>)}</div>; }
 function SimRange({ label, value, min, max, step, unit, onChange }: { label: string; value: number; min: number; max: number; step: number; unit: string; onChange: (value: number) => void }) { return <label className="sim-range"><span>{label}<b>{value.toFixed(step < 0.1 ? 2 : 0)} {unit}</b></span><input type="range" min={min} max={max} step={step} value={value} onInput={(event) => onChange(Number(event.currentTarget.value))} /></label>; }
 

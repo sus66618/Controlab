@@ -1,7 +1,8 @@
 "use client";
 
-import { formatPolynomial } from "@/lib/control";
+import { MathFormula } from "@/components/math/MathFormula";
 import type { TransferModel } from "@/lib/control";
+import { transferToLatex } from "@/lib/math/latex";
 import type { ModelInputMode } from "@/hooks/useControlModel";
 
 const MODES: Array<{ key: ModelInputMode; label: string }> = [
@@ -59,8 +60,8 @@ export function ModelEditor({
     <div className={`editor-message ${error ? "error" : ""}`}>{error || "模型有效，所有图像已同步"}</div>
 
     <div className="transfer-card">
-      <span>G(s)</span>
-      <div><b>{formatPolynomial(model.numerator)}</b><i /><b>{formatPolynomial(model.denominator)}</b></div>
+      <MathFormula latex="G(s)" />
+      <MathFormula latex={transferToLatex(model.numerator, model.denominator)} display />
     </div>
 
     <div className="preset-grid">

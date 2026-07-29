@@ -22,6 +22,7 @@ import {
   pendulumControlForce,
   stepCartPole,
 } from "../lib/simulation/cartPole.ts";
+import { polynomialToLatex, transferToLatex } from "../lib/math/latex.ts";
 
 const closeTo = (actual, expected, tolerance = 1e-4) => {
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} 应接近 ${expected}`);
@@ -114,4 +115,10 @@ test("Q/R 自动设计的 LQR 能稳定默认倒立摆", () => {
   }
   assert.ok(Math.abs(state.theta) < 0.01);
   assert.ok(Math.abs(state.x) < 0.03);
+});
+
+test("传递函数可以转换为规范的 LaTeX", () => {
+  assert.equal(polynomialToLatex([1, 4, 25]), "s^{2} + 4s + 25");
+  assert.equal(polynomialToLatex([0, -1.2434, 0, 0]), "-1.2434s^{2}");
+  assert.equal(transferToLatex([25], [1, 4, 25]), "\\frac{25}{s^{2} + 4s + 25}");
 });

@@ -88,10 +88,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .editor-message { min-height: 27px; padding: 7px 9px; border-radius: 6px; background: rgba(85,214,190,.06); color: #6fc8b7; font-size: 9px; }
 .editor-message.error { background: rgba(255,111,97,.08); color: #f48f84; }
 .transfer-card { margin-top: 16px; display: grid; grid-template-columns: 34px 1fr; gap: 11px; align-items: center; padding: 13px; border: 1px solid var(--line); border-radius: 9px; background: linear-gradient(145deg, #121820, #0d1218); }
-.transfer-card > span { color: var(--accent); font: italic 13px Georgia, serif; }
-.transfer-card div { min-width: 0; text-align: center; font: 11px Georgia, "Songti SC", serif; }
-.transfer-card b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
-.transfer-card i { display: block; height: 1px; margin: 6px 0; background: #55616c; }
+.transfer-card > .math-inline { color: var(--accent); font-size: 13px; }
+.transfer-card > .math-display { min-width: 0; color: #d7dee5; font-size: 11px; text-align: center; }
 .preset-grid { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .preset-grid button { min-width: 0; border: 1px solid var(--line); border-radius: 7px; padding: 9px 8px; display: flex; justify-content: space-between; background: transparent; color: #aeb8c4; font-size: 9px; cursor: pointer; }
 .preset-grid button:hover { border-color: var(--line-strong); background: var(--surface); color: var(--text); }
@@ -174,7 +172,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .module-index { color: var(--quiet); font: 700 8px "Courier New",monospace; letter-spacing: .17em; }
 .module-card h2 { margin: 50px 0 8px; font-size: 25px; letter-spacing: -.035em; }
 .module-card p { max-width: 370px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.7; }
-.module-card code { display: block; margin-top: 17px; color: #8995a2; font-size: 9px; }
+.module-card code,.module-formula { display: block; margin-top: 17px; color: #8995a2; font-size: 9px; }
 .module-card b { position: absolute; right: 23px; bottom: 22px; color: var(--accent); font-size: 9px; }
 .module-icon { position: absolute; right: 25px; top: 26px; width: 92px; height: 55px; }
 .plant-icon i { position: absolute; width: 13px; height: 13px; border-radius: 50%; background: var(--panel); border: 2px solid var(--accent); }
@@ -253,7 +251,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .sim-tabs button.active { background: var(--surface); color: var(--accent); }
 .sim-editor { min-width: 0; }
 .sim-editor h2 { margin: 4px 0 0; font-size: 16px; }
-.controller-equation { display: block; margin: 13px 0 11px; padding: 10px; border: 1px solid var(--line); border-radius: 7px; background: #090d12; color: #b9c4ce; font-size: 9px; line-height: 1.6; white-space: normal; }
+.controller-equation { display: block; margin: 13px 0 11px; padding: 10px; overflow-x: auto; border: 1px solid var(--line); border-radius: 7px; background: #090d12; color: #cbd4dc; font-size: 10px; text-align: center; }
 .sim-field-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
 .number-field span,.sim-select > span { display: block; margin-bottom: 5px; color: var(--quiet); font: 8px "Courier New",monospace; }
 .number-input-shell { display: grid; grid-template-columns: minmax(0,1fr) 43px; height: 33px; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: #090d12; transition: border-color .16s ease,box-shadow .16s ease; }
@@ -282,8 +280,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .rank-badge { padding: 5px 7px; border: 1px solid #345536; border-radius: 5px; color: var(--accent); font: 8px "Courier New",monospace; }
 .model-formula { margin-top: 13px; padding-top: 12px; border-top: 1px solid var(--line); }
 .model-formula > span,.matrix-block > span { display: block; margin-bottom: 7px; color: var(--muted); font-size: 8px; }
-.model-formula code { display: grid; justify-items: center; color: #c2ccd5; font: 9px Georgia,"Songti SC",serif; }
-.model-formula code b { font-weight: 500; }.model-formula code i { width: 100%; height: 1px; margin: 5px 0; background: #56626e; }
+.model-formula .math-display { width: 100%; overflow-x: auto; color: #d5dde4; font-size: 9px; text-align: center; }
 .matrix-block { margin-top: 13px; }
 .matrix { padding: 8px 9px; overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: #090d12; }
 .matrix code { display: block; color: #9ba7b3; font: 8px/1.65 "Courier New",monospace; white-space: pre; }
@@ -294,9 +291,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .feedback-diagram em { position: absolute; left: 38px; right: 9px; bottom: 23px; height: 20px; border-right: 1px solid #52606d; border-bottom: 1px solid #52606d; border-left: 1px solid #52606d; color: #74818e; font: normal 8px "Courier New",monospace; text-align: center; }
 .feedback-diagram small { position: absolute; left: 0; bottom: 0; color: var(--quiet); font-size: 8px; }
 .equation-list { display: grid; gap: 7px; margin: 16px 0; }
-.equation-list code { padding: 9px; border: 1px solid var(--line); border-radius: 6px; background: #090d12; color: #aeb9c4; font: 8px/1.6 "Courier New",monospace; white-space: normal; }
+.equation-list .math-formula { display: block; padding: 10px 8px; overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: #090d12; color: #cbd4dc; font-size: 8px; text-align: center; }
 .principle-panel > p { margin: 11px 0 0; color: var(--muted); font-size: 9px; line-height: 1.7; }
-.principle-panel > p code { color: #bac5ce; }
+.principle-panel > p .math-inline { color: #cbd4dc; }
+.math-formula { font-family: KaTeX_Main,"Times New Roman",serif; }
+.math-display > .katex-display { margin: 0; }
+.math-inline > .katex { font-size: 1em; }
 .signal-strip { display: flex; align-items: stretch; gap: 7px; margin-top: 10px; }
 .signal-strip > div { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: rgba(13,17,23,.72); }
 .signal-strip span { display: block; color: var(--quiet); font-size: 7px; }.signal-strip strong { display: block; margin-top: 4px; color: #d2dae2; font: 12px Georgia,serif; }.signal-strip small { color: var(--muted); font: 7px Arial,sans-serif; }

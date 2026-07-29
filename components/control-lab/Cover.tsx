@@ -1,7 +1,8 @@
 "use client";
 
-import { formatPolynomial } from "@/lib/control";
+import { MathFormula } from "@/components/math/MathFormula";
 import type { TransferModel } from "@/lib/control";
+import { transferToLatex } from "@/lib/math/latex";
 import { AppHeader } from "./AppHeader";
 
 export function Cover({ model, onOpenAnalysis, onOpenClosedLoop, onOpenSimulation }: {
@@ -27,7 +28,7 @@ export function Cover({ model, onOpenAnalysis, onOpenClosedLoop, onOpenSimulatio
         <div className="module-icon plant-icon"><i /><i /><i /></div>
         <h2>系统分析</h2>
         <p>建立被控对象，观察时域、频域、根轨迹与奈氏图。</p>
-        <code>{formatPolynomial(model.numerator)} / {formatPolynomial(model.denominator)}</code>
+        <MathFormula className="module-formula" latex={transferToLatex(model.numerator, model.denominator)} />
         <b>进入工作台 →</b>
       </button>
       <button className="module-card" onClick={onOpenClosedLoop}>
@@ -35,7 +36,7 @@ export function Cover({ model, onOpenAnalysis, onOpenClosedLoop, onOpenSimulatio
         <div className="module-icon loop-icon"><i>C</i><i>G</i><i>↺</i></div>
         <h2>闭环控制</h2>
         <p>接入 PID 与校正器，对比控制前后的动态品质。</p>
-        <code>R → C(s) → G(s) → Y</code>
+        <MathFormula className="module-formula" latex="R \rightarrow C(s) \rightarrow G(s) \rightarrow Y" />
         <b>开启反馈 →</b>
       </button>
       <button className="module-card simulation-card" onClick={onOpenSimulation}>
