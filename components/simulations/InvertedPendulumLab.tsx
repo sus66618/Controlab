@@ -43,13 +43,13 @@ export function InvertedPendulumLab({ onHome, onWorkbench }: { onHome: () => voi
   const [controllerMessage, setControllerMessage] = useState("当前使用推荐 LQR 增益");
   const [excitationDraft, setExcitationDraft] = useState<ExcitationConfig>(DEFAULT_EXCITATION);
   const [excitationApplied, setExcitationApplied] = useState<ExcitationConfig>(DEFAULT_EXCITATION);
-  const [inputMessage, setInputMessage] = useState("当前没有自动输入，鼠标扰动仍可用");
+  const [inputMessage, setInputMessage] = useState("当前没有自动输入，手动力滑杆仍可用");
   const [sideTab, setSideTab] = useState<SideTab>("controller");
   const [running, setRunning] = useState(true);
   const [initialAngle, setInitialAngle] = useState(7);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [savedRun, setSavedRun] = useState<SavedRun>(null);
-  const [dragForce, setDragForce] = useState(0);
+  const [manualForce, setManualForce] = useState(0);
 
   const stateRef = useRef(state);
   const paramsRef = useRef(params);
@@ -62,7 +62,6 @@ export function InvertedPendulumLab({ onHome, onWorkbench }: { onHome: () => voi
   const signalEpochRef = useRef(0);
   const angleIntegralRef = useRef(0);
   const externalForceRef = useRef({ value: 0, until: 0 });
-  const dragRef = useRef<{ x: number } | null>(null);
 
   useEffect(() => { paramsRef.current = params; }, [params]);
   useEffect(() => { enabledRef.current = controllerEnabled; }, [controllerEnabled]);
@@ -80,15 +79,15 @@ export function InvertedPendulumLab({ onHome, onWorkbench }: { onHome: () => voi
     signalEpochRef.current = 0;
     angleIntegralRef.current = 0;
     externalForceRef.current = { value: 0, until: 0 };
-    setDragForce(0);
+    setManualForce(0);
     setHistory([]);
     setState(next);
   }, [initialAngle]);
 
   const disturb = useCallback((force: number, duration = 0.16) => {
     externalForceRef.current = { value: force, until: performance.now() / 1000 + duration };
-    setDragForce(force);
-    window.setTimeout(() => setDragForce(0), duration * 1000);
+    setManualForce(force);
+    window.setTimeout(() => setManualForce(0), duration * 1000);
   }, []);
 
   useEffect(() => {
@@ -176,24 +175,20 @@ export function InvertedPendulumLab({ onHome, onWorkbench }: { onHome: () => voi
     setExcitationDraft(next);
     setExcitationApplied(next);
     excitationRef.current = next;
-    setInputMessage("自动输入已清除，鼠标扰动仍可用");
+    setInputMessage("自动输入已清除，手动力滑杆仍可用");
   };
 
   const saveRun = () => setSavedRun({ label: controllerEnabled ? controllerType.toUpperCase() : "无控制", points: [...history] });
 
-  const onPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
-    dragRef.current = { x: event.clientX };
-    event.currentTarget.setPointerCapture(event.pointerId);
+  const setForceFromSlider = (force: number) => {
+    const next = clamp(force, -14, 14);
+    externalForceRef.current = { value: next, until: Number.POSITIVE_INFINITY };
+    setManualForce(next);
   };
-  const onPointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (!dragRef.current) return;
-    const delta = event.clientX - dragRef.current.x;
-    dragRef.current.x = event.clientX;
-    const force = clamp(delta * 2.2, -14, 14);
-    externalForceRef.current = { value: force, until: performance.now() / 1000 + 0.1 };
-    setDragForce(force);
+  const releaseForceSlider = () => {
+    externalForceRef.current = { value: 0, until: 0 };
+    setManualForce(0);
   };
-  const endDrag = () => { dragRef.current = null; setDragForce(0); };
 
   return <main className="controlab-app simulation-page">
     <AppHeader title="动力学仿真 / Cart–Pole" onHome={onHome} trailing={<><button className="simulation-shortcut" onClick={onWorkbench}>传函工作台</button><div className="compute-status"><i />240 Hz 动力学</div></>} />
@@ -204,12 +199,13 @@ export function InvertedPendulumLab({ onHome, onWorkbench }: { onHome: () => voi
           <div className={`balance-status ${stable ? "stable" : "moving"}`}><i />{controllerEnabled ? stable ? "平衡中" : "控制修正" : "自由运动"}</div>
         </div>
 
-        <PendulumScene state={state} params={params} dragForce={dragForce} reference={currentReference} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} />
+        <PendulumScene state={state} params={params} reference={currentReference} />
+        <ManualForceControl force={manualForce} onChange={setForceFromSlider} onRelease={releaseForceSlider} />
 
         <div className="signal-strip" aria-label="实时信号链">
           <SignalValue label="参考 r" value={currentReference} unit="m" />
           <span className="signal-arrow">→</span><SignalValue label="控制 uᶜ" value={controlForce} unit="N" />
-          <span className="signal-plus">+</span><SignalValue label="扰动 d" value={currentDisturbance + dragForce} unit="N" />
+          <span className="signal-plus">+</span><SignalValue label="扰动 d" value={currentDisturbance + manualForce} unit="N" />
           <span className="signal-arrow">→</span><SignalValue label="输出 θ" value={angleDegrees} unit="°" />
         </div>
 
@@ -328,22 +324,33 @@ function PrinciplePanel({ controllerType }: { controllerType: "pid" | "lqr" }) {
   </section>;
 }
 
-function PendulumScene({ state, params, dragForce, reference, onPointerDown, onPointerMove, onPointerUp }: { state: CartPoleState; params: CartPoleParams; dragForce: number; reference: number; onPointerDown: (event: React.PointerEvent<SVGSVGElement>) => void; onPointerMove: (event: React.PointerEvent<SVGSVGElement>) => void; onPointerUp: () => void }) {
+function PendulumScene({ state, params, reference }: { state: CartPoleState; params: CartPoleParams; reference: number }) {
   const cartX = 500 + state.x * 145;
   const targetX = 500 + reference * 145;
   const polePixels = 190 * (params.poleLength / DEFAULT_CART_POLE_PARAMS.poleLength);
   const poleEndX = cartX + Math.sin(state.theta) * polePixels;
   const poleEndY = 296 - Math.cos(state.theta) * polePixels;
   const angleDegrees = (state.theta * 180) / Math.PI;
-  return <div className="pendulum-stage"><svg viewBox="0 0 1000 480" role="img" aria-label={`倒立摆，摆角 ${angleDegrees.toFixed(2)} 度，小车位置 ${state.x.toFixed(2)} 米，参考位置 ${reference.toFixed(2)} 米`} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
+  return <div className="pendulum-stage"><svg viewBox="0 0 1000 480" role="img" aria-label={`倒立摆，摆角 ${angleDegrees.toFixed(2)} 度，小车位置 ${state.x.toFixed(2)} 米，参考位置 ${reference.toFixed(2)} 米`}>
     <defs><linearGradient id="stage-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#101720" /><stop offset="1" stopColor="#080c11" /></linearGradient><linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#8794a1" /><stop offset="0.45" stopColor="#343f4b" /><stop offset="1" stopColor="#141b23" /></linearGradient><linearGradient id="cart" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#c9d3dc" /><stop offset="0.18" stopColor="#64717e" /><stop offset="1" stopColor="#222b35" /></linearGradient><filter id="soft-shadow"><feDropShadow dx="0" dy="12" stdDeviation="10" floodColor="#000" floodOpacity=".45" /></filter></defs>
     <rect width="1000" height="480" rx="18" fill="url(#stage-bg)" /><g className="cad-grid" opacity=".45">{Array.from({ length: 14 }, (_, index) => <line key={`v${index}`} x1={60 + index * 68} x2={60 + index * 68} y1="332" y2="448" />)}{Array.from({ length: 5 }, (_, index) => <line key={`h${index}`} x1="42" x2="958" y1={348 + index * 24} y2={348 + index * 24} />)}</g>
     <ellipse cx="500" cy="399" rx="420" ry="38" fill="#020406" opacity=".6" /><rect x="74" y="348" width="852" height="18" rx="7" fill="url(#metal)" filter="url(#soft-shadow)" /><rect x="94" y="366" width="812" height="13" rx="4" fill="#111821" stroke="#35414d" />
     {Math.abs(reference) > 1e-5 && <g className="target-marker" transform={`translate(${targetX},0)`}><line x1="0" x2="0" y1="330" y2="386" /><text x="0" y="410" textAnchor="middle">r(t)</text></g>}
     <g transform={`translate(${cartX - 500},0)`} filter="url(#soft-shadow)"><circle cx="442" cy="357" r="23" fill="#0b0f14" stroke="#64717e" strokeWidth="7" /><circle cx="558" cy="357" r="23" fill="#0b0f14" stroke="#64717e" strokeWidth="7" /><path d="M405 296 L595 296 L614 343 L386 343 Z" fill="url(#cart)" stroke="#8b98a5" strokeWidth="2" /><path d="M418 306 H582" stroke="#d7e0e7" strokeWidth="3" opacity=".45" /><rect x="458" y="272" width="84" height="39" rx="8" fill="#27323d" stroke="#8996a3" /><circle cx="500" cy="296" r="18" fill="#10161d" stroke="#b7ff4a" strokeWidth="4" /></g>
     <g><line x1={cartX} y1="296" x2={poleEndX} y2={poleEndY} stroke="#0a0d11" strokeWidth="24" strokeLinecap="round" opacity=".55" /><line x1={cartX} y1="296" x2={poleEndX} y2={poleEndY} stroke="url(#metal)" strokeWidth="17" strokeLinecap="round" /><line x1={cartX - 2} y1="292" x2={poleEndX - 2} y2={poleEndY} stroke="#cbd5dd" strokeWidth="3" strokeLinecap="round" opacity=".5" /><circle cx={poleEndX} cy={poleEndY} r="25" fill="#202a34" stroke="#8d9aa7" strokeWidth="5" /><circle cx={poleEndX} cy={poleEndY} r="8" fill="#b7ff4a" /><circle cx={cartX} cy="296" r="13" fill="#0b1015" stroke="#d1dae2" strokeWidth="4" /></g>
-    {dragForce !== 0 && <g className="force-arrow" transform={`translate(${cartX},255)`}><line x1="0" y1="0" x2={dragForce * 5} y2="0" /><path d={dragForce > 0 ? `M ${dragForce * 5} 0 l -16 -9 v 18 z` : `M ${dragForce * 5} 0 l 16 -9 v 18 z`} /><text x={dragForce * 2.5} y="-15" textAnchor="middle">鼠标扰动 d</text></g>}<text x="66" y="55" className="stage-label">DRAG TO DISTURB</text><text x="66" y="79" className="stage-hint">按住并水平拖动场景</text>
   </svg></div>;
+}
+
+function ManualForceControl({ force, onChange, onRelease }: { force: number; onChange: (force: number) => void; onRelease: () => void }) {
+  return <section className="manual-force-control" aria-label="手动扰动力控制">
+    <div className="manual-force-head"><span>手动扰动力</span><strong className={force === 0 ? "idle" : ""}>{force > 0 ? "+" : ""}{formatNumber(force, 1)} N</strong></div>
+    <div className="manual-force-row">
+      <span>← 向左</span>
+      <input aria-label="手动扰动力，松开归零" type="range" min="-14" max="14" step="0.1" value={force} onInput={(event) => onChange(Number(event.currentTarget.value))} onPointerUp={onRelease} onPointerCancel={onRelease} onKeyUp={onRelease} onBlur={onRelease} />
+      <span>向右 →</span>
+    </div>
+    <small>拖动圆钮施力，离中心越远力越大；松手自动回到零位。</small>
+  </section>;
 }
 
 function NumberField({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
