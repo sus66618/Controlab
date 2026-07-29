@@ -337,7 +337,19 @@ function PendulumScene({ state, params, dragForce, reference, onPointerDown, onP
   </svg></div>;
 }
 
-function NumberField({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) { return <label className="number-field"><span>{label}</span><input type="number" step="0.05" value={value} onChange={(event) => { const next = Number(event.target.value); if (Number.isFinite(next)) onChange(next); }} /></label>; }
+function NumberField({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
+  const adjust = (direction: -1 | 1) => onChange(Math.round((value + direction * 0.05) * 1000) / 1000);
+  return <div className="number-field">
+    <span>{label}</span>
+    <div className="number-input-shell">
+      <input aria-label={label} type="number" step="0.05" value={value} onChange={(event) => { const next = Number(event.target.value); if (Number.isFinite(next)) onChange(next); }} />
+      <div className="number-stepper">
+        <button type="button" aria-label={`减小 ${label}`} onClick={() => adjust(-1)}>−</button>
+        <button type="button" aria-label={`增大 ${label}`} onClick={() => adjust(1)}>+</button>
+      </div>
+    </div>
+  </div>;
+}
 function SignalValue({ label, value, unit }: { label: string; value: number; unit: string }) { return <div><span>{label}</span><strong>{formatNumber(value, 2)} <small>{unit}</small></strong></div>; }
 function ModelFormula({ label, numerator, denominator }: { label: string; numerator: number[]; denominator: number[] }) { return <div className="model-formula"><span>{label}</span><code><b>{formatPolynomial(numerator)}</b><i />{formatPolynomial(denominator)}</code></div>; }
 function Matrix({ value }: { value: number[][] }) { return <div className="matrix">{value.map((row, index) => <code key={index}>[{row.map((item) => formatNumber(item, 3).padStart(7, " ")).join("  ")}]</code>)}</div>; }
