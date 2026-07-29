@@ -49,7 +49,7 @@ export function Cover({ model, onOpenModule }: {
       </button>
       <button className="module-card simulation-card" onClick={() => onOpenModule("simulation")}>
         <span className="module-index">04 / SIMULATION</span>
-        <div><h2>{moduleLabel("simulation")}</h2><p>物理参数、外部扰动与可替换控制器。当前实验：小车倒立摆。</p></div>
+        <div><h2>{moduleLabel("simulation")}</h2><p>从被控对象到算法验证，在真实动态模型中观察系统。</p></div>
         <div className="pendulum-mark" aria-hidden="true"><i /><span /></div>
         <b>进入实验场 →</b>
       </button>

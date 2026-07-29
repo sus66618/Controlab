@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Cover } from "@/components/control-lab/Cover";
-import { InvertedPendulumLab } from "@/components/simulations/InvertedPendulumLab";
+import { SimulationWorkspace } from "@/components/simulations/SimulationWorkspace";
 import { StateSpaceLab } from "@/components/modern-control/StateSpaceLab";
 import { SystemIdentificationLab } from "@/components/identification/SystemIdentificationLab";
 import { Workbench } from "@/components/control-lab/Workbench";
@@ -16,7 +16,7 @@ export default function ControlLab() {
   const controller = useControlModel();
   const navigate = (module: ControlModuleId) => setSurface(module);
   if (surface === "cover") return <Cover model={controller.model} onOpenModule={navigate} />;
-  if (surface === "simulation") return <InvertedPendulumLab onHome={() => setSurface("cover")} onNavigate={navigate} />;
+  if (surface === "simulation") return <SimulationWorkspace onHome={() => setSurface("cover")} onNavigate={navigate} />;
   if (surface === "modern") return <StateSpaceLab onHome={() => setSurface("cover")} onNavigate={navigate} />;
   if (surface === "identification") return <SystemIdentificationLab onHome={() => setSurface("cover")} onNavigate={navigate} />;
   return <Workbench controller={controller} onHome={() => setSurface("cover")} onNavigate={navigate} />;
