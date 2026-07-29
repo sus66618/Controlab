@@ -644,15 +644,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 /* 机械与电路场景 */
 .spring-mass-scene, .dc-motor-scene, .circuit-scene { min-height: 388px; display: grid; place-items: center; background: radial-gradient(circle at 50% 45%, rgba(91,115,129,.1), transparent 48%), #080d12; }
 .spring-mass-scene svg, .dc-motor-scene svg, .circuit-scene svg { display: block; width: 100%; height: auto; }
-.plant-floor, .plant-wall, .spring-line, .damper-line path, .damper-line rect, .circuit-wire, .circuit-element path, .circuit-element rect, .circuit-source path, .circuit-source circle, .motor-wire, .motor-case, .motor-cap, .motor-rotor, .motor-spoke, .motor-shaft, .motor-load, .motor-direction, .opamp path { fill: none; stroke: #52616e; stroke-width: 2; }
+.plant-floor, .plant-wall, .spring-line, .damper-line path, .damper-line rect, .circuit-wire, .circuit-element path, .circuit-element rect, .circuit-source path, .circuit-source circle, .circuit-ground path, .motor-wire, .motor-case, .motor-cap, .motor-rotor, .motor-spoke, .motor-shaft, .motor-load, .motor-direction, .opamp path { fill: none; stroke: #52616e; stroke-width: 2; }
 .spring-line, .circuit-element path { stroke: var(--accent); }
 .damper-line rect { fill: #111a22; }
 .mass-body { stroke: #52616e; stroke-width: 1.5; }
 .mass-wheel { fill: #090d12; stroke: #6b7a86; }
-.mass-body + .mass-wheel { stroke: var(--accent); }
 .spring-mass-scene text, .dc-motor-scene text, .circuit-scene text { fill: #8e9aa5; font: 10px "Courier New", monospace; text-anchor: middle; }
-.force-indicator path, .motor-direction, .circuit-flow { fill: none; stroke: var(--accent); stroke-width: 3; filter: drop-shadow(0 0 6px rgba(183,255,74,.35)); }
-.force-indicator.negative path, .motor-direction.negative, .circuit-flow.negative { stroke: #ff9b62; }
+.force-indicator path, .motor-direction { fill: none; stroke: var(--accent); stroke-width: 3; filter: drop-shadow(0 0 6px rgba(183,255,74,.35)); }
+.force-indicator.negative path, .motor-direction.negative { stroke: #ff9b62; }
 .scene-caption { fill: #53606c !important; font-size: 8px !important; text-anchor: start !important; }
 .motor-case { fill: url(#motor-case); }
 .motor-cap, .motor-load { fill: #131d25; }
@@ -664,14 +663,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .motor-readouts text, .circuit-readouts text { text-anchor: start; }
 .circuit-mode-label { fill: var(--accent) !important; text-anchor: start !important; letter-spacing: .12em; }
 .circuit-source text, .circuit-element text { text-anchor: middle; }
-.circuit-flow { stroke-dasharray: 8 7; animation: circuit-flow 1s linear infinite; }
+.circuit-node { fill: var(--accent); }
 .opamp path:first-child { fill: rgba(177,140,255,.05); stroke: #b18cff; }
 .opamp text { fill: #b18cff; font-size: 14px; }
 .saturation-meter rect:first-child { fill: #1b2530; }
 .saturation-meter rect:nth-child(2) { fill: var(--accent); }
 .saturation-meter text { fill: var(--quiet); font-size: 7px; text-anchor: start; }
 .saturation-meter.clipping rect:nth-child(2) { fill: #ff765f; filter: url(#active-circuit-glow); }
-@keyframes circuit-flow { to { stroke-dashoffset: -30; } }
 
 @media (max-width: 1100px) {
   .simulation-gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
