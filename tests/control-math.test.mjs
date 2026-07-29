@@ -24,7 +24,7 @@ import {
   stepCartPole,
 } from "../lib/simulation/cartPole.ts";
 import { polynomialToLatex, transferToLatex } from "../lib/math/latex.ts";
-import { analyzeStateSpace, classifyLinearStability, emptyStateSpace, parseMatrixText, resizeStateSpace, simulateStateSpace, STATE_SPACE_PRESETS } from "../lib/stateSpace.ts";
+import { analyzeStateSpace, classifyLinearStability, createInitialStateSpaceModel, emptyStateSpace, parseMatrixText, resizeStateSpace, simulateStateSpace, STATE_SPACE_PRESETS } from "../lib/stateSpace.ts";
 
 const closeTo = (actual, expected, tolerance = 1e-4) => {
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} 应接近 ${expected}`);
@@ -164,6 +164,14 @@ test("状态空间维度变化会同步调整全部矩阵", () => {
   assert.deepEqual([resized.C.length, resized.C[0].length], [3, 4]);
   assert.deepEqual([resized.D.length, resized.D[0].length], [3, 2]);
   assert.equal(resized.inputs.length, 2);
+});
+
+test("状态空间重置会返回独立的初始模型快照", () => {
+  const first = createInitialStateSpaceModel();
+  first.A[0][0] = 99;
+  const reset = createInitialStateSpaceModel();
+  assert.deepEqual(reset, STATE_SPACE_PRESETS[0]);
+  assert.notEqual(first.A, reset.A);
 });
 
 test("矩阵整块粘贴支持空格、逗号与分号", () => {

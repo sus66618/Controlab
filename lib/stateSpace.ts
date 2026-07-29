@@ -48,6 +48,10 @@ export function clonePreset(preset: StateSpacePreset): StateSpacePreset {
   return { ...preset, A: preset.A.map((row) => [...row]), B: preset.B.map((row) => [...row]), C: preset.C.map((row) => [...row]), D: preset.D.map((row) => [...row]), initial: [...preset.initial], inputs: preset.inputs.map((item) => ({ ...item })), plotAxes: [...preset.plotAxes] as [number, number] };
 }
 
+export function createInitialStateSpaceModel() {
+  return clonePreset(STATE_SPACE_PRESETS[0]);
+}
+
 export function resizeStateSpace(model: StateSpacePreset, order: number, inputCount: number, outputCount: number): StateSpacePreset {
   return {
     ...model,

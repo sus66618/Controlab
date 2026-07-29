@@ -312,6 +312,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .math-display > .katex-display { margin: 0; }
 .math-inline > .katex { font-size: 1em; }
 
+:where(.matrix-cell-grid,.controller-equation,.model-formula .math-display,.matrix,.equation-list .math-formula,.studio-matrix-readout,.visualizer-tabs) {
+  scrollbar-width: thin;
+  scrollbar-color: #34414c transparent;
+}
+:where(.matrix-cell-grid,.controller-equation,.model-formula .math-display,.matrix,.equation-list .math-formula,.studio-matrix-readout,.visualizer-tabs)::-webkit-scrollbar { width: 6px; height: 6px; }
+:where(.matrix-cell-grid,.controller-equation,.model-formula .math-display,.matrix,.equation-list .math-formula,.studio-matrix-readout,.visualizer-tabs)::-webkit-scrollbar-track { background: transparent; }
+:where(.matrix-cell-grid,.controller-equation,.model-formula .math-display,.matrix,.equation-list .math-formula,.studio-matrix-readout,.visualizer-tabs)::-webkit-scrollbar-thumb { border-radius: 999px; background: #34414c; }
+:where(.matrix-cell-grid,.controller-equation,.model-formula .math-display,.matrix,.equation-list .math-formula,.studio-matrix-readout,.visualizer-tabs)::-webkit-scrollbar-thumb:hover { background: #52616d; }
+
 .matrix-studio-page { min-height: 100vh; }
 .matrix-studio { padding: 22px 24px 34px; }
 .matrix-studio-toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }

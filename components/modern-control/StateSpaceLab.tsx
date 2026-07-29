@@ -8,6 +8,7 @@ import { formatNumber } from "@/lib/control";
 import {
   analyzeStateSpace,
   clonePreset,
+  createInitialStateSpaceModel,
   emptyStateSpace,
   parseMatrixText,
   resizeStateSpace,
@@ -24,7 +25,7 @@ const COLORS = ["#b7ff4a", "#55d6be", "#f3ac58", "#b18cff", "#ff7e72", "#6f9dff"
 const INPUT_NAMES: Record<StateInputConfig["kind"], string> = { zero: "零输入", step: "阶跃", sine: "正弦", ramp: "斜坡" };
 
 export function StateSpaceLab({ onHome, onTransfer, onSimulation }: { onHome: () => void; onTransfer: () => void; onSimulation: () => void }) {
-  const [model, setModel] = useState(() => clonePreset(STATE_SPACE_PRESETS[0]));
+  const [model, setModel] = useState(createInitialStateSpaceModel);
   const [view, setView] = useState<ViewTab>("state");
   const [detail, setDetail] = useState<DetailTab>(null);
   const [pasteTarget, setPasteTarget] = useState<MatrixKey | null>(null);
@@ -46,6 +47,14 @@ export function StateSpaceLab({ onHome, onTransfer, onSimulation }: { onHome: ()
   const makeIdentity = () => setModel((current) => ({ ...current, id: "custom", name: "自定义系统", A: current.A.map((row, rowIndex) => row.map((_, columnIndex) => rowIndex === columnIndex ? 1 : 0)) }));
   const updateInitial = (index: number, value: number) => setModel((current) => ({ ...current, initial: current.initial.map((item, itemIndex) => itemIndex === index ? value : item) }));
   const updateInput = (index: number, patch: Partial<StateInputConfig>) => setModel((current) => ({ ...current, inputs: current.inputs.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item) }));
+  const resetWorkspace = () => {
+    setModel(createInitialStateSpaceModel());
+    setView("state");
+    setDetail(null);
+    setPasteTarget(null);
+    setPasteText("");
+    setPasteError("");
+  };
 
   const openPaste = (key: MatrixKey) => {
     setPasteTarget(key);
@@ -80,7 +89,7 @@ export function StateSpaceLab({ onHome, onTransfer, onSimulation }: { onHome: ()
           <DimensionSelect label="输入 m" value={inputCount} maximum={3} onChange={(value) => updateDimensions(order, value, outputCount)} />
           <DimensionSelect label="输出 p" value={outputCount} maximum={4} onChange={(value) => updateDimensions(order, inputCount, value)} />
           <label className="example-loader"><span>载入示例</span><select value={model.id} onChange={(event) => { const preset = STATE_SPACE_PRESETS.find((item) => item.id === event.target.value); if (preset) setModel(clonePreset(preset)); else setModel(emptyStateSpace(order, inputCount, outputCount)); }}><option value="custom">自定义系统</option>{STATE_SPACE_PRESETS.map((preset) => <option key={preset.id} value={preset.id}>{preset.name}</option>)}</select></label>
-          <button className="blank-model" onClick={() => setModel(emptyStateSpace(order, inputCount, outputCount))}>新建空白</button>
+          <button className="blank-model" onClick={resetWorkspace}>重置</button>
         </div>
       </header>
 
